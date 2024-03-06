@@ -11,7 +11,7 @@ Checklist:
 - [ ] Spot Light Shadows
 - [ ] Physically Based Bloom
 - [ ] Godrays
-- [ ] HDR
+- [ ] HDR (Auto Exposure with Luminance Histogram)
 - [ ] Atmospheric Scattering
 - [ ] MAYBE: Global Illumination
 - [ ] OIT Ordered Transparency
@@ -21,4 +21,6 @@ Checklist:
 - [ ] Rain simulation
 - [ ] SSR
 - [ ] Water
+- [ ] Decals
+- [ ] Compute Shader Particles
 - [ ] Volumetric Clouds
