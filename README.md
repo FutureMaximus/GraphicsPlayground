@@ -8,6 +8,7 @@ Checklist:
 - [ ] Spot Lights
 - [ ] Directional Shadows (Cascaded Shadows?)
 - [ ] Point Light Shadows
+- [ ] Spot Light Shadows
 - [ ] Physically Based Bloom
 - [ ] Godrays
 - [ ] HDR
@@ -20,4 +21,4 @@ Checklist:
 - [ ] Rain simulation
 - [ ] SSR
 - [ ] Water
-- [ ] Physically Based Clouds
+- [ ] Volumetric Clouds
