@@ -207,7 +207,6 @@ public class Engine
         ShaderHandler = new(Config.Settings.ShaderPath);
         Shader screenFBOShader = new(ShaderHandler, "ScreenFBO", "screen");
         Screen = new(screenFBOShader, Window.ClientSize);
-        ShaderHandler.AddShader(screenFBOShader);
         Screen.Load();
 
         GlobalShaderData.LoadBuffers(this);
@@ -295,6 +294,14 @@ public class Engine
         DeltaTime = deltaTime;
         TimeElapsed += deltaTime;
 
+        foreach (IScript script in Scripts)
+        {
+            if (script.ShouldUpdate)
+            {
+                script.Update();
+            }
+        }
+
         List<IAssetHolder> streamedAssets = StreamedAssets.ToList() ?? [];
         foreach (IAssetHolder asset in streamedAssets)
         {
@@ -342,6 +349,10 @@ public class Engine
 
     public void ShutDown()
     {
+        foreach (IScript script in Scripts)
+        {
+            script.OnUnload();
+        }
         foreach (IRenderPass renderPass in RenderPasses)
         {
             renderPass.Dispose();

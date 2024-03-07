@@ -18,7 +18,7 @@ public interface IScript
     /// <summary> Fires when the script is unloaded. </summary>
     public void OnUnload();
 
-    /// <summary> Whether the script should be updated. </summary>
+    /// <summary> Whether the script should be updated defaults to true. </summary>
     public bool ShouldUpdate { get { return true; } }
 
     /// <summary> The description of the script defaults to null if not specified. </summary>
