@@ -2,6 +2,7 @@ The main intention of this project is for it to act as a testing ground for new 
 
 Checklist:
 - [ ] PBR Material Support
+- [ ] PBR approximation for lower-end devices
 - [ ] Directional Lighting
 - [ ] Image Based Lighting
 - [ ] Point Lights
@@ -24,3 +25,5 @@ Checklist:
 - [ ] Decals
 - [ ] Compute Shader Particles
 - [ ] Volumetric Clouds
+- [ ] TAA, FXAA, MSAA
+- [ ] Lens Flare
