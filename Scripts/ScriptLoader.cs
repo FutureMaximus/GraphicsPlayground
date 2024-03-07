@@ -14,7 +14,7 @@ namespace GraphicsPlayground.Scripts;
 public static class ScriptLoader
 {
     /// <summary>Directory to load scripts from.</summary>
-    public static string? ScriptPath;
+    private static string? SCRIPT_PATH;
 
     /// <summary>
     /// Loads all scripts in the build path you can specify a custom assembly to load from for external dependencies.
@@ -22,27 +22,31 @@ public static class ScriptLoader
     /// <param name="engine"></param>
     /// <param name="assembly"></param>
     /// <exception cref="Exception"></exception>
-    public static void LoadAllScripts(Engine engine, Assembly? assembly = null)
+    public static void LoadAllScripts(Engine engine, string path, Assembly? assembly = null)
     {
-        if (ScriptPath == null)
+        SCRIPT_PATH = path;
+        if (SCRIPT_PATH == null)
         {
-            throw new Exception("Script path not set for script loader.");
+            throw new Exception("Script path is invalid for script loader.");
         }
-        Assembly? coreAssembly = Assembly.LoadFrom("space.dll") ?? throw new Exception("Failed to load space assembly.");
-        AssemblyName[] assemblyReferences = assembly?.GetReferencedAssemblies() ?? Array.Empty<AssemblyName>();
+        //string assemblyName = assembly?.GetName().Name ?? "";
+        Assembly? coreAssembly = Assembly.LoadFrom("GraphicsPlayground.dll") ?? throw new Exception("Failed to load space assembly.");
+        AssemblyName[] assemblyReferences = assembly?.GetReferencedAssemblies() ?? [];
         AssemblyName[] coreReferences = coreAssembly.GetReferencedAssemblies();
         foreach (AssemblyName assemblyRef in assemblyReferences)
         {
             if (!coreReferences.Contains(assemblyRef))
             {
+#pragma warning disable CA1806
                 coreReferences.Append(assemblyRef);
+#pragma warning restore CA1806
             }
         }
 
         // TODO: Load scripts async.
         //static void afterScriptLoaded()
 
-        string[] files = Directory.GetFiles(ScriptPath, "*.cs", SearchOption.AllDirectories);
+        string[] files = Directory.GetFiles(SCRIPT_PATH, "*.cs", SearchOption.AllDirectories);
         foreach (string file in files)
         {
             string sourceCode = File.ReadAllText(file);
@@ -72,14 +76,14 @@ public static class ScriptLoader
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         CompilationUnitSyntax root = syntaxTree.GetCompilationUnitRoot();
 
-        UsingDirectiveSyntax[] defaultUsings = new UsingDirectiveSyntax[]
-        {
+        UsingDirectiveSyntax[] defaultUsings =
+        [
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")),
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Collections.Generic")),
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")),
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Text")),
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Threading.Tasks"))
-        };
+        ];
 
         root = root.AddUsings(defaultUsings);
         SyntaxTree newTree = CSharpSyntaxTree.Create(root);
@@ -97,8 +101,7 @@ public static class ScriptLoader
         if (!result.Success)
         {
             IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
-                           diagnostic.IsWarningAsError ||
-                                          diagnostic.Severity == DiagnosticSeverity.Error);
+                           diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
             StringBuilder builder = new();
             foreach (Diagnostic diagnostic in failures)
             {

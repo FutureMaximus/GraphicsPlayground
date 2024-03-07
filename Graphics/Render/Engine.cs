@@ -2,12 +2,16 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Collections.Concurrent;
-using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Graphics.Shaders;
 using OpenTK.Windowing.Desktop;
+using GraphicsPlayground.Graphics.Shaders.Data;
+using GraphicsPlayground.Graphics.Render.RenderPasses.SubPasses;
+using GraphicsPlayground.Graphics.Lighting.Lights;
+using GraphicsPlayground.Graphics.Lighting;
+using GraphicsPlayground.Scripts;
 
-namespace Envision.Graphics.Render;
+namespace GraphicsPlayground.Graphics.Render;
 
 public class Engine
 {
@@ -27,9 +31,13 @@ public class Engine
     public readonly ConcurrentStack<IAssetHolder> StreamedAssets = new();
     public readonly AssetStreamer AssetStreamer;
 
-    //public List<Light> Lights;
+    public ScreenFBO? Screen;
 
-    //public PBRDirectionalLight? DirectionalLight;
+    public List<IScript> Scripts { get; } = [];
+
+    public List<Light> Lights;
+
+    public DirectionalLight? DirectionalLight;
 
     public float DeltaTime { get; set; }
     public float TimeElapsed
@@ -47,7 +55,7 @@ public class Engine
     private float _timeElapsed = 0.0f;
     public float FPS { get; set; }
 
-    public Engine(Window window)
+    public Engine(GameWindow window)
     {
         Window = window;
         EngineSettings = new()
@@ -60,9 +68,9 @@ public class Engine
             MaximumLights = 20,
             FieldOfView = 70f,
             AspectRatio = 1f,
-            DepthNear = 0.1f,
+            DepthNear = 1f,
             DepthFar = 1000f,
-            ClusteredDepthNear = 0.1f,
+            ClusteredDepthNear = 1f,
             ClusteredDepthFar = 10000f,
             ClearColor = [0.05f, 0.05f, 0.05f, 1.0f]
         };
@@ -90,7 +98,7 @@ public class Engine
                               (float)rand.NextDouble() * range - 50,
                               (float)rand.NextDouble() * range - 50,
                               (float)rand.NextDouble() * range - 50);
-            PBRPointLight newLight = new(randLoc, newLightData);
+            PointLight newLight = new(randLoc, newLightData);
             Lights.Add(newLight);
         }
         PBRLightData lightData = new()
@@ -98,7 +106,7 @@ public class Engine
             Color = new Vector3(1.0f, 1.0f, 1.0f),
             Intensity = 5.0f,
         };
-        PBRDirectionalLight directionalLight = new(new Vector3(0.5f, 1.0f, 0.0f), lightData);
+        DirectionalLight directionalLight = new(new Vector3(0.5f, 1.0f, 0.0f), lightData);
         DirectionalLight = directionalLight;
     }
 
@@ -133,6 +141,7 @@ public class Engine
         }
 
         GraphicsUtil.LoadDebugger();
+        ScriptLoader.LoadAllScripts(this, Config.Settings.ScriptPath);
 
         /*ForwardRendering forwardRendering = new(this)
         {
@@ -197,6 +206,8 @@ public class Engine
 
         ShaderHandler = new(Config.Settings.ShaderPath);
         Shader screenFBOShader = new(ShaderHandler, "ScreenFBO", "screen");
+        Screen = new(screenFBOShader, Window.ClientSize);
+        Screen.Load();
 
         GlobalShaderData.LoadBuffers(this);
 
@@ -236,7 +247,8 @@ public class Engine
                 EngineSettings.DepthFar
                 );
         }
-        //EnvisionUI.Update(this);
+        
+        EngineImGuiHelper.Update(this);
 
         if (Window is not null)
         {
@@ -251,7 +263,7 @@ public class Engine
         // ====================================================
 
         // ============= Render ==============
-        ScreenFBO?.Bind();
+        Screen?.Bind();
         GL.ClearColor(
             EngineSettings.ClearColor[0],
             EngineSettings.ClearColor[1],
@@ -271,7 +283,7 @@ public class Engine
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         GL.Disable(EnableCap.DepthTest);
         GL.Clear(ClearBufferMask.ColorBufferBit);
-        //ScreenFBO?.Render();
+        Screen?.Render();
         // ===================================
     }
 

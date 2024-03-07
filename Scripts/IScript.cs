@@ -1,6 +1,6 @@
-﻿using Envision.Graphics.Render;
+﻿using GraphicsPlayground.Graphics.Render;
 
-namespace Space.Scripts;
+namespace GraphicsPlayground.Scripts;
 
 /// <summary>Scripts that can be loaded dynamically into the engine.</summary>
 public interface IScript
@@ -9,11 +9,10 @@ public interface IScript
     /// <param name="engine"></param>
     public void OnLoad(Engine engine);
 
-    /// <summary> Custom run logic for the script. </summary>
+    /// <summary> Custom run logic for the script this is executed while the engine is running. </summary>
     public void Run();
 
-    /// <summary> When the engine updates this will fire. </summary>
-    /// <param name="engine"></param>
+    /// <summary> When the engine updates this will fire every frame if ShouldUpdate is enabled. </summary>
     public void Update();
 
     /// <summary> Fires when the script is unloaded. </summary>

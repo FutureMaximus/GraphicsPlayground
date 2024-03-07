@@ -72,11 +72,13 @@ public class Camera
 
     public void UpdateVectors()
     {
-        Vector3 direction = new Vector3(
-                (float)Math.Cos(MathHelper.DegreesToRadians(Yaw)) * (float)Math.Cos(MathHelper.DegreesToRadians(Pitch)),
-                (float)Math.Sin(MathHelper.DegreesToRadians(Pitch)),
-                (float)Math.Sin(MathHelper.DegreesToRadians(Yaw)) * (float)Math.Cos(MathHelper.DegreesToRadians(Pitch))
-        ).Normalized(); // Normalize the vector, because its length gets closer to 0 the more you look up or down which results in slower movement.
+        float yawRad = MathHelper.DegreesToRadians(Yaw);
+        float pitchRad = MathHelper.DegreesToRadians(Pitch);
+        Vector3 direction = new(
+                (float)Math.Cos(yawRad) * (float)Math.Sin(pitchRad),
+                (float)Math.Sin(yawRad) * (float)Math.Sin(pitchRad),
+                (float)Math.Cos(pitchRad));
+        direction.Normalize(); // Normalize the vector, because its length gets closer to 0 the more you look up or down which results in slower movement.
         Direction = direction;
     }
 }
