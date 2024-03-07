@@ -1,4 +1,7 @@
-﻿using GraphicsPlayground.Util;
+﻿using GraphicsPlayground.Graphics.Models.MarchingCubes.Terrain;
+using GraphicsPlayground.Util;
+using OpenTK.Windowing.Common;
+using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground;
 
@@ -19,6 +22,17 @@ public class Program
             ScriptPath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Scripts\\InternalScripts"
         };
 
-        Console.WriteLine("Hello, World!");
+        ContextFlags contextFlags;
+#if DEBUG
+        contextFlags = ContextFlags.Debug | ContextFlags.ForwardCompatible;
+#else
+        contextFlags = ContextFlags.ForwardCompatible;
+#endif
+
+        Window window = new((int)Config.Settings.Resolution.X, (int)Config.Settings.Resolution.Y, contextFlags)
+        {
+            UpdateFrequency = 60,
+        };
+        window.Run();
     }
 }

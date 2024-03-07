@@ -180,7 +180,6 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
         // ============================================
 
         GL.BindVertexArray(0);
-        IsLoaded = true;
         VerticesLength = GeometryHelper.ArrayFromVector3List(Vertices).Length;
         IndicesLength = indices.Length;
         TextureCoordsLength = GeometryHelper.ArrayFromVector2List(TextureCoords).Length;

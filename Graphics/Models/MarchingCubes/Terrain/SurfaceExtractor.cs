@@ -44,7 +44,9 @@ public class TransvoxelExtractor(IVolumeData<sbyte> data) : ISurfaceExtractor
 
         byte caseCode = GetCaseCode(density);
         if ((caseCode ^ density[7] >> 7 & 0xFF) == 0) // If there is no triangulation
+        {
             return;
+        }
 
         Vector3[] cornerNormals = new Vector3[8];
         for (int i = 0; i < 8; i++)
@@ -123,8 +125,8 @@ public class TransvoxelExtractor(IVolumeData<sbyte> data) : ISurfaceExtractor
     {
         long u = 0x0100 - t; //256 - t
         float s = 1.0f / 256.0f;
-        Vector3 Q = P0 * t + P1 * u; //Density Interpolation
-        Q *= s; // shift to shader !
+        Vector3 Q = P0 * t + P1 * u; // Density Interpolation
+        Q *= s;
         return Q;
     }
 

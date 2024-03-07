@@ -6,7 +6,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace Envision;
+namespace GraphicsPlayground;
 
 public class Window : GameWindow
 {
@@ -19,7 +19,7 @@ public class Window : GameWindow
     public Window(int width, int height, ContextFlags flags) : base(GameWindowSettings.Default, new NativeWindowSettings()
     {
         ClientSize = (width, height),
-        Title = "Envision",
+        Title = "Graphics Playground",
         WindowBorder = WindowBorder.Resizable,
         WindowState = WindowState.Normal,
         StartVisible = true,
@@ -58,9 +58,6 @@ public class Window : GameWindow
         Engine.FPS = (int)(1 / time);
         ImGuiRenderer?.Update(this, time);
         Engine.Render();
-        //ImGuiNET.ImGui.ShowDebugLogWindow();
-        // Stop saving the windows
-        //ImGuiNET.ImGui.ShowDemoWindow();
         GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
         ImGuiRenderer?.Render();
         ImGuiRender.CheckGLError("End of frame");
@@ -117,7 +114,6 @@ public class Window : GameWindow
 
     private void ShutDown()
     {
-        Config.Save();
         Engine.ShutDown();
         ImGuiRenderer?.DestroyDeviceObjects();
         Dispose();

@@ -207,6 +207,7 @@ public class Engine
         ShaderHandler = new(Config.Settings.ShaderPath);
         Shader screenFBOShader = new(ShaderHandler, "ScreenFBO", "screen");
         Screen = new(screenFBOShader, Window.ClientSize);
+        ShaderHandler.AddShader(screenFBOShader);
         Screen.Load();
 
         GlobalShaderData.LoadBuffers(this);
@@ -277,7 +278,9 @@ public class Engine
         foreach (IRenderPass renderPass in RenderPasses)
         {
             if (renderPass.IsEnabled)
+            {
                 renderPass.Render();
+            }
         }
 
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
