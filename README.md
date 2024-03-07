@@ -6,7 +6,7 @@ Checklist:
 - [ ] Image Based Lighting
 - [ ] Point Lights
 - [ ] Spot Lights
-- [ ] Directional Shadows (CSM or VSM - Likely we'll do VSM)
+- [ ] Directional Shadows (CSM)
 - [ ] Point Light Shadows
 - [ ] Spot Light Shadows
 - [ ] Physically Based Bloom
