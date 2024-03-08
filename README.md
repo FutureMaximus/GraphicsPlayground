@@ -1,7 +1,7 @@
 The main intention of this project is for it to act as a testing ground for new graphics capabilities for the Frenetic Game Engine https://github.com/FreneticLLC/FreneticGameEngine
 
 Checklist:
-- [ ] PBR Material Support
+- [X] PBR Material Support
 - [ ] PBR approximation for lower-end devices
 - [ ] Directional Lighting
 - [ ] Image Based Lighting
