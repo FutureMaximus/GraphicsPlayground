@@ -65,12 +65,23 @@ public sealed class Transformation
 
     public Matrix4 Data
     {
-        get => HasChanged ? _data = Matrix4.CreateScale(Scale) * Matrix4.CreateFromQuaternion(Rotation) * Matrix4.CreateTranslation(Position) : _data;
+        get => HasChanged ? _data = GetData() : _data;
         set
         {
             _data = value;
             HasChanged = false;
         }
+    }
+
+    private Matrix4 GetData()
+    {
+        Matrix4 translation = Matrix4.CreateTranslation(Position);
+        translation.Transpose();
+        Matrix4 rotation = Matrix4.CreateFromQuaternion(Rotation);
+        rotation.Transpose();
+        Matrix4 scale = Matrix4.CreateScale(Scale);
+        scale.Transpose();
+        return translation * rotation * scale;
     }
 
     private Matrix4 _data = Matrix4.Identity;
@@ -83,5 +94,10 @@ public sealed class Transformation
     public static Transformation operator *(Transformation transformation, Transformation other)
     {
         return new(transformation.Data * other.Data);
+    }
+
+    public static Matrix4 operator *(Matrix4 matrix, Transformation transformation)
+    {
+        return matrix * transformation.Data;
     }
 }

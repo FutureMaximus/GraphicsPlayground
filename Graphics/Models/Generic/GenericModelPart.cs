@@ -1,19 +1,18 @@
-﻿using GraphicsPlayground.Util;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Models.Generic;
 
 /// <summary> Generic model part data also known as a bone with renderable meshes. </summary>
-public class GenericModelPart : IDisposable
+public class GenericModelPart(string name, GenericModel coreModel) : IDisposable
 {
     // ====== Part Data ======
     /// <summary> The core model that owns this part </summary>
-    public GenericModel CoreModel;
+    public GenericModel CoreModel = coreModel;
     /// <summary> The parent of this part </summary>
     public GenericModelPart? Parent;
     /// <summary> The children of this part </summary>
-    private readonly HashSet<GenericModelPart> _children = new();
+    private readonly HashSet<GenericModelPart> _children = [];
     public void AddChild(GenericModelPart child)
     {
         _children.Add(child);
@@ -25,24 +24,17 @@ public class GenericModelPart : IDisposable
         child.Parent = null;
     }
     public HashSet<GenericModelPart> GetChildren() => _children;
-    public List<GenericMesh> Meshes = new();
+    public List<GenericMesh> Meshes = [];
     public BufferUsageHint ModelUsageHint => CoreModel.ModelUsageHint;
-    public string Name;
+    public string Name = name;
     public Guid ID => _id;
     private readonly Guid _id = Guid.NewGuid();
-    // =======================
-
-    public GenericModelPart(string name, GenericModel coreModel)
-    {
-        Name = name;
-        CoreModel = coreModel;
-    }
 
     // ====== Transform Data ======
     /// <summary> The transformation of the model part relative to the parent. </summary>
     public Transformation LocalTransformation = new();
     /// <summary> The transformation of the model part used for rendering. </summary>
-    public Matrix4 Transformation => LocalTransformation * (Parent?.Transformation ?? Matrix4.Identity) * CoreModel.Transformation;
+    public Matrix4 Transformation => CoreModel.Transformation() * (Parent?.Transformation ?? Matrix4.Identity) * LocalTransformation;
     /// <summary> Returns the normal matrix for this model part</summary>
     public Matrix3 NormalMatrix()
     {

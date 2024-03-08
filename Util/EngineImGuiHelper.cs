@@ -9,6 +9,7 @@ public static class EngineImGuiHelper
     {
         ImGui.Begin("Engine");
         ImGui.Text($"FPS: {engine.FPS}");
+        ImGui.Text($"Camera Position: {engine.Camera.Position}");
         ImGui.End();
     }
 }

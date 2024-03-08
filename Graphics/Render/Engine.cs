@@ -10,6 +10,8 @@ using GraphicsPlayground.Graphics.Render.RenderPasses.SubPasses;
 using GraphicsPlayground.Graphics.Lighting.Lights;
 using GraphicsPlayground.Graphics.Lighting;
 using GraphicsPlayground.Scripts;
+using GraphicsPlayground.Graphics.Models.Generic;
+using OpenTK.Windowing.Common;
 
 namespace GraphicsPlayground.Graphics.Render;
 
@@ -26,6 +28,7 @@ public class Engine
     public Settings EngineSettings;
 
     public readonly List<IRenderPass> RenderPasses = [];
+    public readonly List<GenericModel> GenericModels = [];
 
     /// <summary> Streamed assets that may have tasks to be ran on the main thread </summary>
     public readonly ConcurrentStack<IAssetHolder> StreamedAssets = new();
@@ -61,18 +64,18 @@ public class Engine
         EngineSettings = new()
         {
             UseDeferredRendering = false,
-            UseClusteredForwardRendering = true,
-            UseForwardRendering = false,
+            UseClusteredForwardRendering = false,
+            UseForwardRendering = true,
             UseDebugRendering = false,
             UseOrthographic = false,
-            MaximumLights = 20,
+            MaximumLights = 25,
             FieldOfView = 70f,
             AspectRatio = 1f,
             DepthNear = 1f,
             DepthFar = 1000f,
             ClusteredDepthNear = 1f,
             ClusteredDepthFar = 10000f,
-            ClearColor = [0.05f, 0.05f, 0.05f, 1.0f]
+            ClearColor = [0.05f, 0.05f, 0.5f, 1.0f]
         };
         Lights = new(EngineSettings.MaximumLights);
         AssetStreamer = new(this);
@@ -139,19 +142,20 @@ public class Engine
         {
             throw new Exception("Window is null.");
         }
+        Window.Resize += Window_Resize;
 
         GraphicsUtil.LoadDebugger();
         ScriptLoader.LoadAllScripts(this, Config.Settings.ScriptPath);
 
-        /*ForwardRendering forwardRendering = new(this)
+        ForwardRendering forwardRendering = new(this)
         {
             IsEnabled = EngineSettings.UseForwardRendering
-        };*/
+        };
         /*ClusteredForwardRendering clusteredForwardRendering = new(this)
         {
             IsEnabled = EngineSettings.UseClusteredForwardRendering
         };*/
-        //RenderPasses.Add(forwardRendering);
+        RenderPasses.Add(forwardRendering);
 
         // If a texture is non-existing or invalid, use this instead.
         TextureEntries.AddTexture(TextureHelper.GenerateTextureNotFound());
@@ -162,7 +166,6 @@ public class Engine
             EngineSettings.ClearColor[2],
             EngineSettings.ClearColor[3]
             );
-
         
         EngineSettings.AspectRatio = Window.ClientSize.X / (float)Window.ClientSize.Y;
         EngineSettings.WindowSize = Window.ClientSize;
@@ -212,6 +215,7 @@ public class Engine
         GlobalShaderData.LoadBuffers(this);
 
         GL.Enable(EnableCap.DepthTest);
+        GL.CullFace(CullFaceMode.Back);
         GL.DepthFunc(DepthFunction.Less);
 
         foreach (IRenderPass renderPass in RenderPasses)
@@ -221,6 +225,13 @@ public class Engine
                 renderPass.Load();
             }
         }
+    }
+
+    private void Window_Resize(ResizeEventArgs args)
+    {
+        EngineSettings.WindowSize = args.Size;
+        EngineSettings.AspectRatio = args.Size.X / (float)args.Size.Y;
+        Screen?.Resize(args.Size);
     }
 
     public void Render()

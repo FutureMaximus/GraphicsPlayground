@@ -2,12 +2,11 @@
 
 namespace GraphicsPlayground.Graphics.Render;
 
-// TODO: Rework for 
 public class Camera
 {
     public Vector3 Position = Vector3.Zero;
-    public Vector3 Direction = -Vector3.UnitZ;
-    public Vector3 Up = Vector3.UnitY;
+    public Vector3 Direction = Vector3.UnitX;
+    public Vector3 Up = Vector3.UnitZ;
     public Vector3 Side
     {
         get => Vector3.Cross(Direction, Up).Normalized();
@@ -52,11 +51,9 @@ public class Camera
         return (Position - point).LengthSquared;
     }
 
-    // Rotation around the X axis (radians)
-    private float _pitch;
+    private float _pitch = 0;
 
-    // Rotation around the Y axis (radians)
-    private float _yaw = -MathHelper.PiOver2; // Without this, you would be started rotated 90 degrees right.
+    private float _yaw = 0;
 
     public void MoveForward(float deltaTime, float speed) => Position += Direction * speed * deltaTime;
 

@@ -33,12 +33,6 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
     public List<Vector3>? Tangents;
     public int TangentsLength = 0;
     public bool HasTangents = false;
-
-    private List<Vector3>? PrevVertices;
-    private List<uint>? PrevIndices;
-    private List<Vector2>? PrevTextureCoords;
-    private List<Vector3>? PrevNormals;
-    private List<Vector3>? PrevTangents;
     // =======================
 
     // ====== OpenGL Data =====
@@ -66,6 +60,8 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
     public Vector3 Scale = Vector3.One;
     // ============================
 
+    public bool IsLoaded = false;
+
     public void Load()
     {
         if (Vertices.Count == 0 || Indices.Count == 0)
@@ -81,7 +77,7 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
             throw new ArgumentException("Texture coordinates are empty.");
         }
 
-        if (BoneIDs.Count == 0 || Weights.Count == 0)
+        /*if (BoneIDs.Count == 0 || Weights.Count == 0)
         {
             // Fill up the bone weights and IDs with empty data.
             for (int i = 0; i < Vertices.Count; i++)
@@ -89,7 +85,7 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
                 BoneIDs.AddRange(GraphicsUtil.EmptyBoneIDs());
                 Weights.AddRange(GraphicsUtil.EmptyBoneWeights());
             }
-        }
+        }*/
 
         // ========= Vertex Binding ========
         List<GenericVertexData> data = GeometryHelper.GetVertexDatas(Vertices, Normals, TextureCoords);
@@ -187,52 +183,8 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
         if (Tangents is not null)
         {
             TangentsLength = GeometryHelper.ArrayFromVector3List(Tangents).Length;
-            PrevTangents = Tangents;
         }
-        PrevVertices = Vertices;
-        PrevIndices = Indices;
-        PrevTextureCoords = TextureCoords;
-        PrevNormals = Normals;
-    }
-
-    public void UpdateMesh(bool newData)
-    {
-        if (PrevVertices is null || PrevNormals is null) return;
-        List<Vector3> newVertices = new();
-        List<Vector3> newNormals = new();
-        foreach (Vector3 vertex in PrevVertices)
-        {
-            Vector3 newVertex = vertex * Scale;
-            newVertex = Vector3.Transform(newVertex, Rotation);
-            newVertex += Position;
-            newVertices.Add(newVertex);
-        }
-        Matrix4 scaleMatrix = Matrix4.CreateScale(Scale);
-        Matrix4 rotationMatrix = Matrix4.CreateFromQuaternion(Rotation);
-        foreach (Vector3 normal in PrevNormals)
-        {
-            Matrix4 transform = scaleMatrix * rotationMatrix;
-            if (transform.Determinant == 0)
-            {
-                transform = Matrix4.Identity;
-            }
-            Vector3 newNormal = Vector3.TransformNormal(normal, transform);
-            newNormals.Add(newNormal.Normalized());
-        }
-        Vertices = newVertices;
-        Normals = newNormals;
-        if (newData)
-        {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Count * Unsafe.SizeOf<GenericVertexData>(), GeometryHelper.GetVertexDatas(newVertices, newNormals, TextureCoords).ToArray(), ParentPart.ModelUsageHint);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-        }
-        else
-        {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
-            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, Vertices.Count * Unsafe.SizeOf<GenericVertexData>(), GeometryHelper.GetVertexDatas(newVertices, newNormals, TextureCoords).ToArray());
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-        }
+        IsLoaded = true;
     }
 
     public void Render()

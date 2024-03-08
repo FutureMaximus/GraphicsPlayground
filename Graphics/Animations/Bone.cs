@@ -117,7 +117,7 @@ public class Bone
         int nextPositionIndex = (positionIndex + 1) % PositionData.Count;
         float scaleFactor = (float)GetScaleFactor(PositionData[positionIndex].Time, PositionData[nextPositionIndex].Time, animationTime);
         Vector3 finalPosition = Vector3.Lerp(PositionData[positionIndex].Value, PositionData[nextPositionIndex].Value, scaleFactor);
-        return Matrix4.CreateTranslation(finalPosition);
+        return Matrix4.CreateTranslation(finalPosition); // TODO: Transpose?
     }
 
     /// <summary>
