@@ -8,9 +8,10 @@ namespace GraphicsPlayground.Graphics.Terrain;
 /// </summary>
 public class VolumeChunk<T> : IVolumeData<T>
 {
+    public readonly Vector3i Position;
+    public VolumeSize Size { get { return _size; } }
     private readonly T[] _data;
     private readonly VolumeSize _size;
-    public readonly Vector3i Position;
 
     public VolumeChunk(VolumeSize size, Vector3i position)
     {
@@ -26,7 +27,6 @@ public class VolumeChunk<T> : IVolumeData<T>
     }
 
     #region Implementation of IVolumeData<T>
-
     public T this[int x, int y, int z]
     {
         get { return _data[x + y * _size.SideLength + z * _size.SideLengthSquared]; }
@@ -44,9 +44,6 @@ public class VolumeChunk<T> : IVolumeData<T>
         get { return this[(int)v.X, (int)v.Y, (int)v.Z]; }
         set { this[(int)v.X, (int)v.Y, (int)v.Z] = value; }
     }
-
-    public VolumeSize Size { get { return _size; } }
-
     #endregion
 
     public override bool Equals(object? obj)

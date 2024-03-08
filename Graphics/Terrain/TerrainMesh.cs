@@ -1,13 +1,14 @@
-﻿using GraphicsPlayground.Util;
+﻿using GraphicsPlayground.Graphics.Models;
+using GraphicsPlayground.Util;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground.Graphics.Terrain;
 
-public class TerrainMesh : IDisposable
+public sealed class TerrainMesh(int x, int y, int z) : IDisposable
 {
-    public readonly int X, Y, Z = 0;
+    public readonly int X = x, Y = y, Z = z;
 
     public List<Vector3> Vertices = [];
     public List<Vector3> Normals = [];
@@ -22,13 +23,6 @@ public class TerrainMesh : IDisposable
 
     public bool IsEmpty => Vertices.Count == 0 || Indices.Count == 0 || Normals.Count == 0;
     public bool IsLoaded = false;
-
-    public TerrainMesh(int x, int y, int z)
-    {
-        X = x;
-        Y = y;
-        Z = z;
-    }
 
     /// <summary > Loads the mesh into the GPU and returns true if successful. </summary>
     public void Load()

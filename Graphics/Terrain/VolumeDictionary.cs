@@ -7,31 +7,25 @@ namespace GraphicsPlayground.Graphics.Terrain;
 /// Based off of https://transvoxel.org/.
 /// Lengyel, Eric. “Voxel-Based Terrain for Real-Time Virtual Simulations”. PhD diss., University of California at Davis, 2010.
 /// </summary>
-public class VolumeDictionary<T>(VolumeSize size, VolumeSize chunkSize) : IVolumeData<T>
+public class VolumeDictionary<T>(VolumeSize size) : IVolumeData<T>
 {
     private readonly ConcurrentDictionary<Vector3i, VolumeChunk<T>> _data = new();
     private readonly VolumeSize _size = size;
-    private readonly VolumeSize _chunkSize = chunkSize;
 
     public VolumeSize Size
     {
         get { return _size; }
     }
 
-    public VolumeSize ChunkSize
+    public Vector3i GetChunkIndex(int x, int y, int z)
     {
-        get { return _chunkSize; }
-    }
-
-    private Vector3i GetChunkIndex(int x, int y, int z)
-    {
-        int xI = (int)(x / ChunkSize.SideLength);
+        int xI = x / Size.SideLength;
         if (x < 0) xI--;
 
-        int yI = (int)(y / ChunkSize.SideLength);
+        int yI = y / Size.SideLength;
         if (y < 0) yI--;
 
-        int zI = (int)(z / ChunkSize.SideLength);
+        int zI = z / Size.SideLength;
         if (z < 0) zI--;
 
         return new Vector3i(xI, yI, zI);
@@ -41,25 +35,25 @@ public class VolumeDictionary<T>(VolumeSize size, VolumeSize chunkSize) : IVolum
     {
         get
         {
-#pragma warning disable CS8603
             Vector3i chunkIndex = GetChunkIndex(x, y, z);
-            if (!_data.TryGetValue(chunkIndex, out VolumeChunk<T>? value))
+            if (!_data.ContainsKey(chunkIndex))
+#pragma warning disable CS8603 // Possible null reference return.
                 return default;
-#pragma warning restore CS8603
+#pragma warning restore CS8603 // Possible null reference return.
 
-            long offsetIndex = x - chunkIndex.X * ChunkSize.SideLength +
-                              (y - chunkIndex.Y * ChunkSize.SideLength) * ChunkSize.SideLength +
-                              (z - chunkIndex.Z * ChunkSize.SideLength) * ChunkSize.SideLengthSquared;
+            int offsetIndex = (x - chunkIndex.X * Size.SideLength) +
+                              (y - chunkIndex.Y * Size.SideLength) * Size.SideLength +
+                              (z - chunkIndex.Z * Size.SideLength) * Size.SideLengthSquared;
 
-            return value[(int)offsetIndex];
+            return _data[chunkIndex][offsetIndex];
         }
         set
         {
             Vector3i chunkIndex = GetChunkIndex(x, y, z);
 
-            long offsetIndex = (x - chunkIndex.X * ChunkSize.SideLength) +
-                              (y - chunkIndex.Y * ChunkSize.SideLength) * ChunkSize.SideLength +
-                              (z - chunkIndex.Z * ChunkSize.SideLength) * ChunkSize.SideLengthSquared;
+            int offsetIndex = (x - chunkIndex.X * Size.SideLength) +
+                              (y - chunkIndex.Y * Size.SideLength) * Size.SideLength +
+                              (z - chunkIndex.Z * Size.SideLength) * Size.SideLengthSquared;
 
             VolumeChunk<T> chunk;
             if (!_data.ContainsKey(chunkIndex))
@@ -67,22 +61,13 @@ public class VolumeDictionary<T>(VolumeSize size, VolumeSize chunkSize) : IVolum
             else
                 chunk = _data[chunkIndex];
 
-            chunk[(int)offsetIndex] = value;
+            chunk[offsetIndex] = value;
         }
     }
 
-    public VolumeChunk<T> GetChunk(Vector3 position)
+    public VolumeChunk<T> CreateChunk(Vector3i chunkIndex)
     {
-        Vector3i chunkIndex = GetChunkIndex((int)position.X, (int)position.Y, (int)position.Z);
-        if (!_data.TryGetValue(chunkIndex, out VolumeChunk<T>? value))
-            return CreateChunk(chunkIndex);
-
-        return value;
-    }
-
-    private VolumeChunk<T> CreateChunk(Vector3i chunkIndex)
-    {
-        VolumeChunk<T> chunk = new(Size, chunkIndex * (int)ChunkSize.SideLength);
+        var chunk = new VolumeChunk<T>(Size, chunkIndex * Size.SideLength);
         _data.TryAdd(chunkIndex, chunk);
         return chunk;
     }

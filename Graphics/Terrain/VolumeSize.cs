@@ -7,23 +7,29 @@
 public sealed class VolumeSize
 {
     /// <summary> The axis unit size of the volume. </summary>
-    public readonly long SideLength = 8;
+    public readonly int SideLength = 8;
     /// <summary> The axis unit size^2 </summary>
-    public readonly long SideLengthSquared = 64;
+    public readonly int SideLengthSquared = 64;
     /// <summary> The axis unit size^3 </summary>
-    public readonly long SideLengthCubed = 512;
+    public readonly int SideLengthCubed = 512;
 
-    public VolumeSize(long sideLength)
+    public VolumeSize(int sideLength)
     {
         if (sideLength % 2 != 0)
+        {
             throw new ArgumentException("Side length not a power of 2", nameof(sideLength));
+        }
         if (sideLength < 8)
+        {
             throw new ArgumentException("Side length too small", nameof(sideLength));
+        }
 
         SideLength = sideLength;
         SideLengthSquared = sideLength * sideLength;
         SideLengthCubed = sideLength * sideLength * sideLength;
-        if (SideLengthCubed > long.MaxValue)
+        if (SideLengthCubed > int.MaxValue)
+        {
             throw new ArgumentException("Side length too large", nameof(sideLength));
+        }
     }
 }

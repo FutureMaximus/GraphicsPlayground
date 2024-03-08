@@ -11,9 +11,18 @@ public interface ISurfaceExtractor
 /// Based on https://transvoxel.org// by Eric Lengyel with
 /// modifications for parallelization.
 /// </summary>
-public class TransvoxelExtractor(IVolumeData<sbyte> data) : ISurfaceExtractor
+public class TransvoxelExtractor : ISurfaceExtractor
 {
-    private readonly IVolumeData<sbyte> _volume = data;
+    private readonly IVolumeData<sbyte> _volume;
+    public bool UseCache { get; set; }
+    private readonly RegularCellCache _cache;
+
+    public TransvoxelExtractor(IVolumeData<sbyte> data)
+    {
+        _volume = data;
+        _cache = new RegularCellCache(_volume.Size.SideLength * 10);
+        UseCache = true;
+    }
 
     public void GenLodRegion(ref TerrainMesh mesh, Vector3i min, int size, int lod)
     {
@@ -32,8 +41,13 @@ public class TransvoxelExtractor(IVolumeData<sbyte> data) : ISurfaceExtractor
 
     public void PolygonizeCell(Vector3i offsetPos, Vector3i pos, ref TerrainMesh mesh, int lod)
     {
-        //Debug.Assert(lod >= 1, "Level of Detail must be greater than 1");
+        if (lod < 1)
+        { 
+            throw new Exception("Level of Detail must be greater than 1");
+        }
         offsetPos += pos * lod;
+
+        byte directionMask = (byte)((pos.X > 0 ? 1 : 0) | ((pos.Z > 0 ? 1 : 0) << 1) | ((pos.Y > 0 ? 1 : 0) << 2));
 
         sbyte[] density = new sbyte[8];
 
@@ -44,7 +58,9 @@ public class TransvoxelExtractor(IVolumeData<sbyte> data) : ISurfaceExtractor
 
         byte caseCode = GetCaseCode(density);
         if ((caseCode ^ density[7] >> 7 & 0xFF) == 0) // If there is no triangulation
+        {
             return;
+        }
 
         Vector3[] cornerNormals = new Vector3[8];
         for (int i = 0; i < 8; i++)
@@ -66,18 +82,20 @@ public class TransvoxelExtractor(IVolumeData<sbyte> data) : ISurfaceExtractor
         LengyelTables.RegularCell c = LengyelTables.RegularCellData[regularCellsClass];
         long vertexCount = c.GetVertexCount();
         long triangleCount = c.GetTriangleCount();
-        byte[] indexOffset = c.Indizes();
-        ushort[] mappedIndices = new ushort[indexOffset.Length];
+        byte[] indexOffset = c.Indizes(); // Index offsets for current cell
+        ushort[] mappedIndices = new ushort[indexOffset.Length]; // Array with real indizes for current cell
 
         for (int i = 0; i < vertexCount; i++)
         {
-            byte v1 = (byte)(vertexLocations[i] & 0x0F); //Second Corner Index
-            byte v0 = (byte)(vertexLocations[i] >> 4 & 0x0F); //First Corner Index
+            byte edge = (byte)(vertexLocations[i] >> 8);
+            byte reuseIndex = (byte)(edge & 0xF); //Vertex id which should be created or reused 1,2 or 3
+            byte rDir = (byte)(edge >> 4); //the direction to go to reach a previous cell for reusing 
+
+            byte v1 = (byte)((vertexLocations[i]) & 0x0F); //Second Corner Index
+            byte v0 = (byte)((vertexLocations[i] >> 4) & 0x0F); //First Corner Index
 
             sbyte d0 = density[v0];
             sbyte d1 = density[v1];
-
-            //Debug.Assert(v1 > v0);
 
             int t = (d1 << 8) / (d1 - d0);
             int u = 0x0100 - t;
@@ -86,11 +104,22 @@ public class TransvoxelExtractor(IVolumeData<sbyte> data) : ISurfaceExtractor
 
             int index = -1;
 
+            if (UseCache && v1 != 7 && (rDir & directionMask) == rDir)
+            {
+                ReuseCell cell = _cache.GetReusedIndex(pos, rDir);
+                index = cell.Verts[reuseIndex];
+            }
+
             if (index == -1)
             {
                 Vector3 normal = cornerNormals[v0] * t0 + cornerNormals[v1] * t1;
                 GenerateVertex(in offsetPos, ref mesh, lod, t, ref v0, ref v1, normal);
                 index = mesh.LatestAddedVertIndex();
+            }
+
+            if ((rDir & 8) != 0)
+            {
+                _cache.SetReusableIndex(pos, reuseIndex, mesh.LatestAddedVertIndex());
             }
 
             mappedIndices[i] = (ushort)index;
