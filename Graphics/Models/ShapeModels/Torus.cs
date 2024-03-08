@@ -88,6 +88,7 @@ public class Torus : GenericMesh
 
         Vertices = vertices;
         List<uint> indicesList = new(indices);
+        Array.Reverse(indices);
         Indices = indicesList;
         TextureCoords = textureCoords;
         Normals = normals;

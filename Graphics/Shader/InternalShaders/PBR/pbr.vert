@@ -19,7 +19,6 @@ out VS_OUT {
 	vec3  FragPos;
 	vec2  TexCoords;
 	vec3  Normal;
-	vec3  ViewPos;
 	mat3  TBN;
 } vs_out;
 
@@ -48,14 +47,14 @@ void main()
 	//	vec3 localNormal = aNormal * mat3(finalBonesMatrices[aBoneIds[i]]);
 	//}
 
-	gl_Position = projection * view * model * vec4(aPosition, 1.0); // TODO: Use totalPosition
-	vs_out.FragPos = vec3(model * vec4(aPosition, 1.0));
-	vec3 normal = normalize(normalMatrix * aNormal);
+	//gl_Position = projection * view * model * vec4(aPosition, 1.0); // TODO: Use totalPosition
+	gl_Position = vec4(aPosition, 1.0) * model * view * projection;
+	vs_out.FragPos = vec3(vec4(aPosition, 1.0) * model);
+	vec3 normal = normalize(aNormal * normalMatrix);
 	vs_out.Normal = normal;
 	vs_out.TexCoords = aTexCoords;
-	vs_out.ViewPos = viewPos;
 	if (hasTangents) {
-		vec3 T = normalize(normalMatrix * aTangent);
+		vec3 T = normalize(aTangent * normalMatrix);
 		vec3 N = normal;
 		T = normalize(T - dot(T, N) * N);
 		vec3 B = normalize(cross(N, T));

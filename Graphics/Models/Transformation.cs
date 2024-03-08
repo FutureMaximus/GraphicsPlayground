@@ -76,12 +76,12 @@ public sealed class Transformation
     private Matrix4 GetData()
     {
         Matrix4 translation = Matrix4.CreateTranslation(Position);
-        translation.Transpose();
+        //translation.Transpose();
         Matrix4 rotation = Matrix4.CreateFromQuaternion(Rotation);
-        rotation.Transpose();
+        //rotation.Transpose();
         Matrix4 scale = Matrix4.CreateScale(Scale);
-        scale.Transpose();
-        return translation * rotation * scale;
+        //scale.Transpose();
+        return scale * rotation * translation;
     }
 
     private Matrix4 _data = Matrix4.Identity;

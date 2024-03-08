@@ -43,23 +43,6 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
     public int VertexArrayObject;
     // ========================
 
-    // ====== Transform Data ======
-    public Vector3 Position = Vector3.Zero;
-    public Quaternion Rotation = Quaternion.Identity;
-    public Vector3 RotationEuler
-    {
-        get => _rotationEulerStorage;
-        set
-        {
-            _rotationEulerStorage = value;
-            Vector3 rad = new(MathHelper.DegreesToRadians(value.X), MathHelper.DegreesToRadians(value.Y), MathHelper.DegreesToRadians(value.Z));
-            Rotation = Quaternion.FromEulerAngles(rad).Normalized();
-        }
-    }
-    private Vector3 _rotationEulerStorage = Vector3.Zero;
-    public Vector3 Scale = Vector3.One;
-    // ============================
-
     public bool IsLoaded = false;
 
     public void Load()
@@ -103,7 +86,7 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
         {
             if (Normals[i] == Vector3.Zero)
             {
-                Normals[i] = Vector3.UnitY;
+                Normals[i] = Vector3.UnitZ;
             }
         }
 

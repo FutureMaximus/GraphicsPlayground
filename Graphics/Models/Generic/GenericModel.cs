@@ -25,12 +25,12 @@ public class GenericModel(string name) : IModel
     public Matrix4 Transformation()
     {
         Matrix4 translate = Matrix4.CreateTranslation(Position);
-        translate.Transpose();
+        //translate.Transpose();
         Matrix4 rotate = Matrix4.CreateFromQuaternion(Rotation);
-        rotate.Transpose();
+        //rotate.Transpose();
         Matrix4 scale = Matrix4.CreateScale(Scale);
-        scale.Transpose();
-        return translate * rotate * scale;
+        //scale.Transpose();
+        return scale * rotate * translate;
     }
 
     /// <summary> The root model parts that can contain children parts. </summary>

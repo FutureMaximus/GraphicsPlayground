@@ -17,14 +17,14 @@ public class TestScript : IScript
         {
             LocalTransformation = new()
             {
-                Position = new(0f, -10f, 0f),
-                Scale = new(10f, 10f, 10f)
+                Position = new(0f, 0f, 20f),
+                Scale = new(1f, 1f, 1f)
             }
         };
-        Texture2D defaultAlbedo = TextureHelper.GenerateColorTexture(Color.Gray, 128, 128);
+        Texture2D defaultAlbedo = TextureHelper.GenerateColorTexture(Color.White, 128, 128);
         Texture2D defaultNormal = TextureHelper.GenerateColorTexture(ColorHelper.DefaultNormalMapColor, 128, 128);
         Texture2D defaultARM = TextureHelper.GenerateColorTexture(Color.FromArgb(255, 100, 200), 128, 128);
-        GenericMesh sphereMesh = new Sphere(spherePart, 1, 20, 50)
+        GenericMesh sphereMesh = new Torus(spherePart, 10, 5, 50, 100)
         {
             ShaderData = new GenericMeshShaderData(
                 new PBRMaterialData()

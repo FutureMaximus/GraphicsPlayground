@@ -25,8 +25,6 @@ public class ForwardRendering : IRenderPass
     private Shader? _pbrShader;
     #endregion
 
-    private DirectionalLight? DirectionalLight;
-
     public ForwardRendering(Engine engine)
     {
         Engine = engine;
@@ -77,14 +75,6 @@ public class ForwardRendering : IRenderPass
 
         // ======= PBR loading ========
         _pbrShader = new(Engine.ShaderHandler, "PBR", "pbr");
-        for (int i = 0; i < Engine.EngineSettings.MaximumLights; i++)
-        {
-            Light light = Engine.Lights[i];
-            if (light is DirectionalLight pbrDirectionalLight)
-            {
-                DirectionalLight = pbrDirectionalLight;
-            }
-        }
         // =============================
     }
     #endregion
@@ -97,7 +87,14 @@ public class ForwardRendering : IRenderPass
         {
             throw new NullReferenceException("PBR shader is not set.");
         }
+        if (Engine.DirectionalLight is null)
+        {
+            throw new NullReferenceException("Directional light is not set.");
+        }
         _pbrShader.Use();
+        _pbrShader.SetVector3($"dirLight.direction", ref Engine.DirectionalLight.Position);
+        _pbrShader.SetVector3($"dirLight.color", ref Engine.DirectionalLight.LightData.Color);
+        _pbrShader.SetFloat($"dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
         int pntLightI = 0;
         for (int i = 0; i < Engine.EngineSettings.MaximumLights; i++)
         {
@@ -111,12 +108,6 @@ public class ForwardRendering : IRenderPass
                 _pbrShader.SetFloat($"pointLights[{pntLightI}].linear", ref pbrPointLight.LightData.Linear);
                 _pbrShader.SetFloat($"pointLights[{pntLightI}].quadratic", ref pbrPointLight.LightData.Quadratic);
                 pntLightI++;
-            }
-            else if (light is DirectionalLight pbrDirectionalLight)
-            {
-                _pbrShader.SetVector3($"dirLight.direction", ref pbrDirectionalLight.Position);
-                _pbrShader.SetVector3($"dirLight.color", ref pbrDirectionalLight.LightData.Color);
-                _pbrShader.SetFloat($"dirLight.intensity", ref pbrDirectionalLight.LightData.Intensity);
             }
         }
 

@@ -68,13 +68,13 @@ public class Engine
             UseForwardRendering = true,
             UseDebugRendering = false,
             UseOrthographic = false,
-            MaximumLights = 25,
+            MaximumLights = 7,
             FieldOfView = 70f,
             AspectRatio = 1f,
-            DepthNear = 1f,
-            DepthFar = 1000f,
-            ClusteredDepthNear = 1f,
-            ClusteredDepthFar = 10000f,
+            DepthNear = 0.1f,
+            DepthFar = 25000f,
+            ClusteredDepthNear = 0.1f,
+            ClusteredDepthFar = 25000f,
             ClearColor = [0.05f, 0.05f, 0.5f, 1.0f]
         };
         Lights = new(EngineSettings.MaximumLights);
@@ -89,7 +89,7 @@ public class Engine
             PBRLightData newLightData = new()
             {
                 Color = randColor,
-                Intensity = 1f,
+                Intensity = 5f,
                 MaxRange = 500f,
                 Constant = 1.0f,
                 Linear = 0.09f,
@@ -107,7 +107,7 @@ public class Engine
         PBRLightData lightData = new()
         {
             Color = new Vector3(1.0f, 1.0f, 1.0f),
-            Intensity = 5.0f,
+            Intensity = 10.0f,
         };
         DirectionalLight directionalLight = new(new Vector3(0.5f, 1.0f, 0.0f), lightData);
         DirectionalLight = directionalLight;
@@ -215,7 +215,6 @@ public class Engine
         GlobalShaderData.LoadBuffers(this);
 
         GL.Enable(EnableCap.DepthTest);
-        GL.CullFace(CullFaceMode.Back);
         GL.DepthFunc(DepthFunction.Less);
 
         foreach (IRenderPass renderPass in RenderPasses)

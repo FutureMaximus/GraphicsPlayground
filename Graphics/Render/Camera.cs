@@ -5,8 +5,8 @@ namespace GraphicsPlayground.Graphics.Render;
 public class Camera
 {
     public Vector3 Position = Vector3.Zero;
-    public Vector3 Direction = Vector3.UnitX;
-    public Vector3 Up = Vector3.UnitZ;
+    public Vector3 Direction = -Vector3.UnitZ;
+    public Vector3 Up = Vector3.UnitY;
     public Vector3 Side
     {
         get => Vector3.Cross(Direction, Up).Normalized();
@@ -17,8 +17,7 @@ public class Camera
         get => MathHelper.RadiansToDegrees(_pitch);
         set
         {
-            float angle = MathHelper.Clamp(value, -89f, 89f);
-            _pitch = MathHelper.DegreesToRadians(angle);
+            _pitch = MathHelper.DegreesToRadians(value);
             UpdateVectors();
         }
     }
@@ -69,13 +68,11 @@ public class Camera
 
     public void UpdateVectors()
     {
-        float yawRad = MathHelper.DegreesToRadians(Yaw);
-        float pitchRad = MathHelper.DegreesToRadians(Pitch);
-        Vector3 direction = new(
-                (float)Math.Cos(yawRad) * (float)Math.Sin(pitchRad),
-                (float)Math.Sin(yawRad) * (float)Math.Sin(pitchRad),
-                (float)Math.Cos(pitchRad));
-        direction.Normalize(); // Normalize the vector, because its length gets closer to 0 the more you look up or down which results in slower movement.
+        Vector3 direction = new Vector3(
+                (float)Math.Cos(MathHelper.DegreesToRadians(Yaw)) * (float)Math.Cos(MathHelper.DegreesToRadians(Pitch)),
+                (float)Math.Sin(MathHelper.DegreesToRadians(Pitch)),
+                (float)Math.Sin(MathHelper.DegreesToRadians(Yaw)) * (float)Math.Cos(MathHelper.DegreesToRadians(Pitch))
+        ).Normalized(); // Normalize the vector, because its length gets closer to 0 the more you look up or down which results in slower movement.
         Direction = direction;
     }
 }

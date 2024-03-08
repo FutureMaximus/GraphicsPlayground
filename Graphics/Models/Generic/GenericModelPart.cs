@@ -34,7 +34,7 @@ public class GenericModelPart(string name, GenericModel coreModel) : IDisposable
     /// <summary> The transformation of the model part relative to the parent. </summary>
     public Transformation LocalTransformation = new();
     /// <summary> The transformation of the model part used for rendering. </summary>
-    public Matrix4 Transformation => CoreModel.Transformation() * (Parent?.Transformation ?? Matrix4.Identity) * LocalTransformation;
+    public Matrix4 Transformation => LocalTransformation * (Parent?.Transformation ?? Matrix4.Identity) * CoreModel.Transformation();
     /// <summary> Returns the normal matrix for this model part</summary>
     public Matrix3 NormalMatrix()
     {

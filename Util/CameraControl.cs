@@ -40,7 +40,7 @@ public class CameraControl(Camera camera)
     public bool IsMoving = false;
 
     private readonly Camera _camera = camera;
-    private float _speed = 1.0f;
+    private float _speed = 10.0f;
 
     public void UpdateKeyboardState(KeyboardState keyboard, float deltaTime)
     {

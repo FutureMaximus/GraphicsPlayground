@@ -134,7 +134,7 @@ public class Bone
         float scaleFactor = (float)GetScaleFactor(RotationData[rotationIndex].Time, RotationData[nextRotationIndex].Time, animationTime);
         OpenTK.Mathematics.Quaternion finalRotation = 
             OpenTK.Mathematics.Quaternion.Slerp(RotationData[rotationIndex].Value, RotationData[nextRotationIndex].Value, scaleFactor);
-        return Matrix4.CreateFromQuaternion(finalRotation);
+        return Matrix4.CreateFromQuaternion(finalRotation); // TODO: Transpose?
     }
 
     /// <summary>
@@ -150,7 +150,7 @@ public class Bone
         int nextScaleIndex = (scaleIndex + 1) % ScaleData.Count;
         float scaleFactor = (float)GetScaleFactor(ScaleData[scaleIndex].Time, ScaleData[nextScaleIndex].Time, animationTime);
         Vector3 finalScale = Vector3.Lerp(ScaleData[scaleIndex].Value, ScaleData[nextScaleIndex].Value, scaleFactor);
-        return Matrix4.CreateScale(finalScale);
+        return Matrix4.CreateScale(finalScale); // TODO: Transpose?
     }
 
     /// <summary>

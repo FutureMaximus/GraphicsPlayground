@@ -236,11 +236,11 @@ public class Shader : IShader
     public void SetBool(string name, bool data) => GL.Uniform1(GetUniformLocation(name), data ? 1 : 0);
     public static void SetBool(int location, bool data) => GL.Uniform1(location, data ? 1 : 0);
 
-    public void SetMatrix3(string name, ref Matrix3 data) => GL.UniformMatrix3(GetUniformLocation(name), false, ref data);
-    public static void SetMatrix3(int location, ref Matrix3 data) => GL.UniformMatrix3(location, false, ref data);
+    public void SetMatrix3(string name, ref Matrix3 data) => GL.UniformMatrix3(GetUniformLocation(name), true, ref data);
+    public static void SetMatrix3(int location, ref Matrix3 data) => GL.UniformMatrix3(location, true, ref data);
 
-    public void SetMatrix4(string name, ref Matrix4 data) => GL.UniformMatrix4(GetUniformLocation(name), false, ref data);
-    public static void SetMatrix4(int location, ref Matrix4 data) => GL.UniformMatrix4(location, false, ref data);
+    public void SetMatrix4(string name, ref Matrix4 data) => GL.UniformMatrix4(GetUniformLocation(name), true, ref data);
+    public static void SetMatrix4(int location, ref Matrix4 data) => GL.UniformMatrix4(location, true, ref data);
 
     public void SetVector2(string name, ref Vector2 data) => GL.Uniform2(GetUniformLocation(name), ref data);
     public static void SetVector2(int location, ref Vector2 data) => GL.Uniform2(location, ref data);
