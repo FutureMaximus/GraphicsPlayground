@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsPlayground", "GraphicsPlayground.csproj", "{6CF3F7E3-94A3-4EE8-8F57-FC829743DFEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsPlayground", "GraphicsPlayground.csproj", "{6CF3F7E3-94A3-4EE8-8F57-FC829743DFEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

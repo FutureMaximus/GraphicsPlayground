@@ -27,22 +27,17 @@ public class Engine
     public Matrix4 ClusteredRenderProjection;
     public Matrix4 Orthographic;
     public Settings EngineSettings;
-
     public readonly List<IRenderPass> RenderPasses = [];
     public readonly List<GenericModel> GenericModels = [];
     public readonly List<TerrainMesh> TerrainMeshes = [];
-
     /// <summary> Streamed assets that may have tasks to be ran on the main thread </summary>
     public readonly ConcurrentStack<IAssetHolder> StreamedAssets = new();
     public readonly AssetStreamer AssetStreamer;
-
     public ScreenFBO? Screen;
-
     public List<IScript> Scripts { get; } = [];
-
     public List<Light> Lights;
-
     public DirectionalLight? DirectionalLight;
+    public Action? OnCustomImGuiLogic;
 
     public float DeltaTime { get; set; }
     public float TimeElapsed
@@ -261,6 +256,7 @@ public class Engine
         }
         
         EngineImGuiHelper.Update(this);
+        OnCustomImGuiLogic?.Invoke();
 
         if (Window is not null)
         {
@@ -285,7 +281,7 @@ public class Engine
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         GL.Enable(EnableCap.DepthTest);
         //GL.Enable(EnableCap.CullFace);
-        //GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+        GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 
         foreach (IRenderPass renderPass in RenderPasses)
         {
@@ -295,6 +291,7 @@ public class Engine
             }
         }
 
+        GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         GL.Disable(EnableCap.DepthTest);
         GL.Clear(ClearBufferMask.ColorBufferBit);

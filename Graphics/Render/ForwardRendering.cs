@@ -153,10 +153,12 @@ public class ForwardRendering : IRenderPass
         {
             _terrainShader?.Use();
             Matrix4 translation = terrainMesh.Translation;
+            Matrix4 scale = Matrix4.CreateScale(terrainMesh.Scale);
             Matrix4 identity = Matrix4.Identity;
             Matrix3 identity3 = Matrix3.Identity;
             //_terrainShader?.SetMatrix4("model", ref translation); TODO: Implement way for each chunk to have its position matrix instead of just using identity.
-            _terrainShader?.SetMatrix4("model", ref identity);
+            Matrix4 modelMat = scale;
+            _terrainShader?.SetMatrix4("model", ref scale);
             _terrainShader?.SetMatrix3("normalMatrix", ref identity3);
             terrainMesh.Render();
         }

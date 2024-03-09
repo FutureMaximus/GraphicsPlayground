@@ -9,8 +9,8 @@ public interface IScript
     /// <param name="engine"></param>
     public void OnLoad(Engine engine);
 
-    /// <summary> Custom run logic for the script this is executed while the engine is running. </summary>
-    public void Run();
+    /// <summary> Custom reload logic for the script that can be ran while the engine is running. </summary>
+    public void OnReload();
 
     /// <summary> When the engine updates this will fire every frame if ShouldUpdate is enabled. </summary>
     public void Update();

@@ -5,12 +5,16 @@ using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Terrain;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
+using ImGuiNET;
 using System.Drawing;
 
 namespace GraphicsPlayground.Scripts.InternalScripts;
 
 public class TestScript : IScript
 {
+    public VoxelWorld? World;
+    public Engine Engine;
+
     void IScript.OnLoad(Engine engine)
     {
         GenericModel sphere = new("sphere");
@@ -41,24 +45,52 @@ public class TestScript : IScript
         engine.GenericModels.Add(sphere);
 
         VoxelWorld world = new(engine);
-        world.TestGenerate(64);
-        world.ExtractMesh(64, 1);
+        world.TestGenerate(Volumesize);
+        world.ExtractMesh(Volumesize, LOD);
+        World = world;
+        Engine = engine;
+
+        engine.OnCustomImGuiLogic += CustomImGui;
     }
+
+    static int LOD = 1;
+    static int Volumesize = 64;
 
     void IScript.OnUnload()
     {
         Console.WriteLine("Unloaded TestScript");
     }
 
-    void IScript.Run()
+    void IScript.OnReload()
     {
-        Console.WriteLine("TestScript Run");
+        Console.WriteLine("TestScript OnReload");
     }
 
-    bool IScript.ShouldUpdate => false;
+    static RateLimiter rateLimiter = new(1);
+
+    void CustomImGui()
+    {
+        ImGui.Begin("Terrain LOD");
+        ImGui.SetWindowFontScale(2f);
+        if (ImGui.SliderInt("LOD", ref LOD, 1, 12))
+        {
+            if (rateLimiter.CanProceed(Engine.TimeElapsed))
+            {
+                Engine.TerrainMeshes.Clear();
+                World?.ExtractMesh(Volumesize, LOD);
+            }
+        }
+        ImGui.Text($"Meshes: {Engine.TerrainMeshes.Count}");
+        ImGui.SetWindowFontScale(1f);
+        ImGui.End();
+    }
+
+    bool IScript.ShouldUpdate => true;
 
     void IScript.Update()
     {
-        Console.WriteLine("TestScript Update");
+        ImGui.Begin("Test Script");
+        ImGui.Text("Test Script");
+        ImGui.End();
     }
 }
