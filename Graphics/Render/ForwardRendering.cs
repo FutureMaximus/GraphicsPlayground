@@ -7,6 +7,7 @@ using GraphicsPlayground.Graphics.Shaders;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Graphics.Models.Generic;
+using GraphicsPlayground.Graphics.Terrain;
 
 namespace GraphicsPlayground.Graphics.Render;
 
@@ -20,9 +21,8 @@ public class ForwardRendering : IRenderPass
 
     #region Shaders
 
-    /// <summary> The PBR shader used for rendering models. </summary>
-    /// <param name="engine"></param>
     private Shader? _pbrShader;
+    private Shader? _terrainShader;
     #endregion
 
     public ForwardRendering(Engine engine)
@@ -72,10 +72,8 @@ public class ForwardRendering : IRenderPass
     public void Load()
     {
         if (Engine.ShaderHandler is null) return;
-
-        // ======= PBR loading ========
         _pbrShader = new(Engine.ShaderHandler, "PBR", "pbr");
-        // =============================
+        _terrainShader = new(Engine.ShaderHandler, "Terrain", "terrain");
     }
     #endregion
 
@@ -150,6 +148,17 @@ public class ForwardRendering : IRenderPass
                     mesh.Render();
                 }
             }
+        }
+        foreach (TerrainMesh terrainMesh in Engine.TerrainMeshes)
+        {
+            _terrainShader?.Use();
+            Matrix4 translation = terrainMesh.Translation;
+            Matrix4 identity = Matrix4.Identity;
+            Matrix3 identity3 = Matrix3.Identity;
+            //_terrainShader?.SetMatrix4("model", ref translation); TODO: Implement way for each chunk to have its position matrix instead of just using identity.
+            _terrainShader?.SetMatrix4("model", ref identity);
+            _terrainShader?.SetMatrix3("normalMatrix", ref identity3);
+            terrainMesh.Render();
         }
         // ======================================
     }

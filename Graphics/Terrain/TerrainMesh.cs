@@ -8,7 +8,8 @@ namespace GraphicsPlayground.Graphics.Terrain;
 
 public sealed class TerrainMesh(int x, int y, int z) : IDisposable
 {
-    public readonly int X = x, Y = y, Z = z;
+    public readonly Vector3 Position = new(x, y, z);
+    public readonly Matrix4 Translation = Matrix4.CreateTranslation(x, y, z);
 
     public List<Vector3> Vertices = [];
     public List<Vector3> Normals = [];
@@ -32,7 +33,7 @@ public sealed class TerrainMesh(int x, int y, int z) : IDisposable
             return;
         }
 
-        string terrainMeshID = $"Terrain Grid ({X},{Y},{Z}) Mesh";
+        string terrainMeshID = $"Terrain Grid ({Position.X},{Position.Y},{Position.Z}) Mesh";
 
         // ======== Vertex Binding =========
         VertexArrayObject = GL.GenVertexArray();

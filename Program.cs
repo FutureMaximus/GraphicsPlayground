@@ -1,7 +1,5 @@
-﻿using GraphicsPlayground.Graphics.Models.MarchingCubes.Terrain;
-using GraphicsPlayground.Util;
+﻿using GraphicsPlayground.Util;
 using OpenTK.Windowing.Common;
-using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground;
 

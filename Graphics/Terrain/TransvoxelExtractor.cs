@@ -113,7 +113,7 @@ public class TransvoxelExtractor : ISurfaceExtractor
             if (index == -1)
             {
                 Vector3 normal = cornerNormals[v0] * t0 + cornerNormals[v1] * t1;
-                GenerateVertex(in offsetPos, ref mesh, lod, t, ref v0, ref v1, normal);
+                GenerateVertex(ref offsetPos, ref mesh, lod, t, ref v0, ref v1, normal);
                 index = mesh.LatestAddedVertIndex();
             }
 
@@ -134,7 +134,7 @@ public class TransvoxelExtractor : ISurfaceExtractor
         }
     }
 
-    private static void GenerateVertex(in Vector3i offsetPos, ref TerrainMesh mesh, int lod, long t, ref byte v0, ref byte v1, Vector3 normal)
+    private static void GenerateVertex(ref Vector3i offsetPos, ref TerrainMesh mesh, int lod, long t, ref byte v0, ref byte v1, Vector3 normal)
     {
         Vector3i iP0 = offsetPos + LengyelTables.CornerIndex[v0] * lod;
         Vector3 P0 = new(iP0.X, iP0.Y, iP0.Z);
@@ -153,7 +153,7 @@ public class TransvoxelExtractor : ISurfaceExtractor
         long u = 0x0100 - t; //256 - t
         float s = 1.0f / 256.0f;
         Vector3 Q = P0 * t + P1 * u; //Density Interpolation
-        Q *= s; // shift to shader !
+        Q *= s;
         return Q;
     }
 

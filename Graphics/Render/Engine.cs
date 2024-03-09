@@ -12,6 +12,7 @@ using GraphicsPlayground.Graphics.Lighting;
 using GraphicsPlayground.Scripts;
 using GraphicsPlayground.Graphics.Models.Generic;
 using OpenTK.Windowing.Common;
+using GraphicsPlayground.Graphics.Terrain;
 
 namespace GraphicsPlayground.Graphics.Render;
 
@@ -29,6 +30,7 @@ public class Engine
 
     public readonly List<IRenderPass> RenderPasses = [];
     public readonly List<GenericModel> GenericModels = [];
+    public readonly List<TerrainMesh> TerrainMeshes = [];
 
     /// <summary> Streamed assets that may have tasks to be ran on the main thread </summary>
     public readonly ConcurrentStack<IAssetHolder> StreamedAssets = new();
@@ -282,7 +284,8 @@ public class Engine
             );
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         GL.Enable(EnableCap.DepthTest);
-        GL.Enable(EnableCap.CullFace);
+        //GL.Enable(EnableCap.CullFace);
+        //GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 
         foreach (IRenderPass renderPass in RenderPasses)
         {

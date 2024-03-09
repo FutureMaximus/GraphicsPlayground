@@ -2,6 +2,7 @@
 using GraphicsPlayground.Graphics.Models.ShapeModels;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Shaders.Data;
+using GraphicsPlayground.Graphics.Terrain;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using System.Drawing;
@@ -38,6 +39,10 @@ public class TestScript : IScript
         spherePart.Meshes.Add(sphereMesh);
         sphere.Parts.Add(spherePart);
         engine.GenericModels.Add(sphere);
+
+        VoxelWorld world = new(engine);
+        world.TestGenerate(64);
+        world.ExtractMesh(64, 1);
     }
 
     void IScript.OnUnload()
