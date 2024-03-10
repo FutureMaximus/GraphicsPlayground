@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace GraphicsPlayground.Graphics.Terrain;
+namespace GraphicsPlayground.Graphics.Terrain.Chunks;
 
 public sealed class Chunk
 {

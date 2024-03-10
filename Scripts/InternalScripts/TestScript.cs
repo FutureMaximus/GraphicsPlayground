@@ -3,6 +3,7 @@ using GraphicsPlayground.Graphics.Models.ShapeModels;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Terrain;
+using GraphicsPlayground.Graphics.Terrain.World;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using ImGuiNET;

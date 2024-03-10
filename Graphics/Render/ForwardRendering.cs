@@ -16,7 +16,7 @@ public class ForwardRendering : IRenderPass
 {
     /// <summary> Reference to the engine. </summary>
     public Engine Engine;
-    /// <summary> Settings of shadow rendering. </summary>
+    /// <summary> WorldSettings of shadow rendering. </summary>
     public ShadowInternalSettings ShadowSettings;
 
     #region Shaders

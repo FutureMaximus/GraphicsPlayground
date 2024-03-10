@@ -6,19 +6,20 @@ namespace GraphicsPlayground.Util;
 /// <summary>Linear octree data structure.</summary>
 public struct LinearOctree
 {
-    public ConcurrentDictionary<ulong, OctreeNode> NodeMap;
-    public Vector3 RootPosition;
+    public ConcurrentDictionary<ulong, OctreeNode> NodeMap = new();
+    public Vector3i RootPosition;
     public int RootSize;
     public int RootDepth;
     public int LeafSize;
 
-    public LinearOctree(ConcurrentDictionary<ulong, OctreeNode> nodeMap, Vector3 rootPos, int rootSize, int rootDepth)
+    public LinearOctree(Vector3i rootPos, int rootSize, int rootDepth)
     {
-        NodeMap = nodeMap;
         RootPosition = rootPos;
         RootSize = rootSize;
         RootDepth = rootDepth;
         LeafSize = RootSize >> RootDepth;
+
+        CreateRootNode();
     }
 
     /// <summary>Creates the root node of the octree.</summary>
@@ -81,7 +82,7 @@ public struct LinearOctree
             child.Depth = childDepth;
             child.Extents = childExtents;
             child.LocationCode = (node.LocationCode << 3) | i;
-            child.Position = node.Position + new Vector3(
+            child.Position = node.Position + new Vector3i(
                 childExtents * ((i & 1) > 0 ? 1 : -1),
                 childExtents * ((i & 2) > 0 ? 1 : -1),
                 childExtents * ((i & 4) > 0 ? 1 : -1));

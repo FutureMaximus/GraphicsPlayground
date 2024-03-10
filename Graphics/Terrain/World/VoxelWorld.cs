@@ -1,9 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using GraphicsPlayground.Graphics.Render;
+using GraphicsPlayground.Graphics.Terrain.Chunks;
 using GraphicsPlayground.Util;
 using OpenTK.Mathematics;
 
-namespace GraphicsPlayground.Graphics.Terrain;
+namespace GraphicsPlayground.Graphics.Terrain.World;
 
 /// <summary>The voxel world that contains all the data for the terrain.</summary>
 public class VoxelWorld
@@ -61,9 +62,9 @@ public class VoxelWorld
             {
                 for (int z = 0; z < WorldSize; z++)
                 {
-                    float xCoord = (float)x * scale;
-                    float yCoord = (float)y * scale;
-                    float zCoord = (float)z * scale;
+                    float xCoord = x * scale;
+                    float yCoord = y * scale;
+                    float zCoord = z * scale;
                     VolumeData[x, y, z] = (sbyte)(noise.GetNoise(xCoord, yCoord, zCoord) * 45f);
                 }
             }
