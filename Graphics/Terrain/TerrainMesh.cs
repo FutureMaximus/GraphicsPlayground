@@ -11,6 +11,7 @@ public sealed class TerrainMesh(int x, int y, int z) : IDisposable
     public readonly Vector3 Position = new(x, y, z);
     public Vector3 Scale = new(1);
     public readonly Matrix4 Translation = Matrix4.CreateTranslation(x, y, z);
+    public int LOD = 1;
 
     public List<Vector3> Vertices = [];
     public List<Vector3> Normals = [];

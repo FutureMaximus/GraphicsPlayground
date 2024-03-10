@@ -46,22 +46,17 @@ public class TransvoxelExtractor : ISurfaceExtractor
             throw new Exception("Level of Detail must be greater than 1");
         }
         offsetPos += pos * lod;
-
         byte directionMask = (byte)((pos.X > 0 ? 1 : 0) | ((pos.Z > 0 ? 1 : 0) << 1) | ((pos.Y > 0 ? 1 : 0) << 2));
-
         sbyte[] density = new sbyte[8];
-
         for (int i = 0; i < density.Length; i++)
         {
             density[i] = _volume[offsetPos + LengyelTables.CornerIndex[i] * lod];
         }
-
         byte caseCode = GetCaseCode(density);
         if ((caseCode ^ density[7] >> 7 & 0xFF) == 0) // If there is no triangulation
         {
             return;
         }
-
         Vector3[] cornerNormals = new Vector3[8];
         for (int i = 0; i < 8; i++)
         {
@@ -69,62 +64,49 @@ public class TransvoxelExtractor : ISurfaceExtractor
             float nx = (_volume[p + Vector3i.UnitX] - _volume[p - Vector3i.UnitX]) * 0.5f;
             float ny = (_volume[p + Vector3i.UnitY] - _volume[p - Vector3i.UnitY]) * 0.5f;
             float nz = (_volume[p + Vector3i.UnitZ] - _volume[p - Vector3i.UnitZ]) * 0.5f;
-
             cornerNormals[i].X = nx;
             cornerNormals[i].Y = ny;
             cornerNormals[i].Z = nz;
             cornerNormals[i].Normalize();
         }
-
         byte regularCellsClass = LengyelTables.RegularCellClass[caseCode];
         ushort[] vertexLocations = LengyelTables.RegularVertexData[caseCode];
-
         LengyelTables.RegularCell c = LengyelTables.RegularCellData[regularCellsClass];
         long vertexCount = c.GetVertexCount();
         long triangleCount = c.GetTriangleCount();
         byte[] indexOffset = c.Indizes(); // Index offsets for current cell
         ushort[] mappedIndices = new ushort[indexOffset.Length]; // Array with real indizes for current cell
-
         for (int i = 0; i < vertexCount; i++)
         {
             byte edge = (byte)(vertexLocations[i] >> 8);
             byte reuseIndex = (byte)(edge & 0xF); //Vertex id which should be created or reused 1,2 or 3
             byte rDir = (byte)(edge >> 4); //the direction to go to reach a previous cell for reusing 
-
             byte v1 = (byte)((vertexLocations[i]) & 0x0F); //Second Corner Index
             byte v0 = (byte)((vertexLocations[i] >> 4) & 0x0F); //First Corner Index
-
             sbyte d0 = density[v0];
             sbyte d1 = density[v1];
-
             int t = (d1 << 8) / (d1 - d0);
             int u = 0x0100 - t;
             float t0 = t / 256f;
             float t1 = u / 256f;
-
             int index = -1;
-
             if (UseCache && v1 != 7 && (rDir & directionMask) == rDir)
             {
                 ReuseCell cell = _cache.GetReusedIndex(pos, rDir);
                 index = cell.Verts[reuseIndex];
             }
-
             if (index == -1)
             {
                 Vector3 normal = cornerNormals[v0] * t0 + cornerNormals[v1] * t1;
                 GenerateVertex(ref offsetPos, ref mesh, lod, t, ref v0, ref v1, normal);
                 index = mesh.LatestAddedVertIndex();
             }
-
             if ((rDir & 8) != 0)
             {
                 _cache.SetReusableIndex(pos, reuseIndex, mesh.LatestAddedVertIndex());
             }
-
             mappedIndices[i] = (ushort)index;
         }
-
         for (int t = 0; t < triangleCount; t++)
         {
             for (int i = 0; i < 3; i++)
@@ -138,12 +120,9 @@ public class TransvoxelExtractor : ISurfaceExtractor
     {
         Vector3i iP0 = offsetPos + LengyelTables.CornerIndex[v0] * lod;
         Vector3 P0 = new(iP0.X, iP0.Y, iP0.Z);
-
         Vector3i iP1 = offsetPos + LengyelTables.CornerIndex[v1] * lod;
         Vector3 P1 = new(iP1.X, iP1.Y, iP1.Z);
-
         Vector3 Q = InterpolateVoxelVector(t, P0, P1);
-
         mesh.Vertices.Add(Q);
         mesh.Normals.Add(normal);
     }
@@ -166,7 +145,6 @@ public class TransvoxelExtractor : ISurfaceExtractor
             code |= (byte)(density[i] >> density.Length - 1 - i & konj);
             konj <<= 1;
         }
-
         return code;
     }
 }

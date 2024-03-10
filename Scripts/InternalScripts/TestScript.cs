@@ -6,6 +6,7 @@ using GraphicsPlayground.Graphics.Terrain;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using ImGuiNET;
+using OpenTK.Mathematics;
 using System.Drawing;
 
 namespace GraphicsPlayground.Scripts.InternalScripts;
@@ -44,9 +45,9 @@ public class TestScript : IScript
         sphere.Parts.Add(spherePart);
         engine.GenericModels.Add(sphere);
 
-        VoxelWorld world = new(engine);
-        world.TestGenerate(Volumesize);
-        world.ExtractMesh(Volumesize, LOD);
+        VoxelWorld world = new(engine, 200);
+        world.TestGenerate();
+        world.ExtractMesh(LOD);
         World = world;
         Engine = engine;
 
@@ -54,7 +55,7 @@ public class TestScript : IScript
     }
 
     static int LOD = 1;
-    static int Volumesize = 64;
+    static int Volumesize = 128;
 
     void IScript.OnUnload()
     {
@@ -76,11 +77,16 @@ public class TestScript : IScript
         {
             if (rateLimiter.CanProceed(Engine.TimeElapsed))
             {
+                foreach (TerrainMesh mesh in Engine.TerrainMeshes)
+                {
+                    mesh.Dispose();
+                }
                 Engine.TerrainMeshes.Clear();
-                World?.ExtractMesh(Volumesize, LOD);
+                World?.ExtractMesh(LOD);
             }
         }
         ImGui.Text($"Meshes: {Engine.TerrainMeshes.Count}");
+        ImGui.Text($"FPS: {Engine.FPS}");
         ImGui.SetWindowFontScale(1f);
         ImGui.End();
     }
