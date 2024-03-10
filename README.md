@@ -2,10 +2,10 @@ The main intention of this project is for it to act as a testing ground for new 
 
 Checklist:
 - [X] PBR Material Support
+- [X] Point Lights
+- [X] Directional Lighting
 - [ ] PBR approximation for lower-end devices
-- [ ] Directional Lighting
 - [ ] Image Based Lighting
-- [ ] Point Lights
 - [ ] Spot Lights
 - [ ] Directional Shadows (CSM)
 - [ ] Point Light Shadows
