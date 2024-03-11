@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Terrain.Chunks;
+using GraphicsPlayground.Graphics.Terrain.Density;
 
 namespace GraphicsPlayground.Graphics.Terrain.World;
 
@@ -14,6 +15,11 @@ public class VoxelWorld2
     public WorldState WorldState;
     /// <summary>Updates the chunks in the world based on the target position.</summary>
     public ChunkUpdateExecutor? ChunkUpdateExecutor;
+    /// <summary>
+    /// Updates the density of the terrain through noise.
+    /// To manually modify the density of the terrain use the VolumeDensityData in WorldState.
+    /// </summary>
+    public DensityUpdateExecutor? DensityUpdateExecutor;
 
     public VoxelWorld2(Engine engine, WorldSettings worldSettings)
     {
@@ -24,8 +30,10 @@ public class VoxelWorld2
 
     public void Start()
     {
-        ChunkUpdateExecutor = new ChunkUpdateExecutor(WorldSettings, WorldState);
+        ChunkUpdateExecutor = new ChunkUpdateExecutor(WorldSettings, ref WorldState);
         ChunkUpdateExecutor.Start();
+        DensityUpdateExecutor = new DensityUpdateExecutor(WorldSettings, ref WorldState, GeneratorSettings);
+        DensityUpdateExecutor.Start();
         ChunkUpdateExecutor.ChunkUpdates.Clear();
         ChunkUpdateExecutor.ChunkUpdatesMap.Clear();
     }
@@ -33,5 +41,6 @@ public class VoxelWorld2
     public void Update()
     {
         ChunkUpdateExecutor?.Execute();
+        DensityUpdateExecutor?.Execute();
     }
 }

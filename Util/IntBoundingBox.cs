@@ -2,6 +2,7 @@
 
 namespace GraphicsPlayground.Util;
 
+/// <summary>An axis-aligned bounding box with integer coordinates.</summary>
 public struct IntBoundingBox()
 {
     public Vector3i Min;

@@ -4,16 +4,7 @@ using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Terrain.Chunks;
 
-/// <summary>Compares two chunk updates based on their LOD.</summary>
-/*public struct ChunkUpdateComparer : IComparer<ChunkUpdate>
-{
-    public readonly int Compare(ChunkUpdate x, ChunkUpdate y)
-    {
-        return x.LOD < y.LOD ? 1 : -1;
-    }
-}*/
-
-public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldState)
+public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState worldState)
 {
     /// <summary>The octree used for partitioning the chunks.</summary>
     public LinearOctree Octree = worldState.ChunkData.ChunkTree;
@@ -34,6 +25,7 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldSt
     public void Start()
     {
         TargetPosition = WorldSettings.TargetPosition;
+        Execute();
     }
 
     /// <summary>Executes the chunk updater.</summary>
@@ -42,13 +34,21 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldSt
         // TODO: Use distance from the target position to determine which chunks to update
         GetChunkUpdates(Octree.RootNode);
         BuildTransitionMasks();
-        //ChunkUpdates.Sort(new ChunkUpdateComparer());
-        // Sort the chunk updates based on their LOD
-        ChunkUpdates.Sort((x, y) => x.LOD < y.LOD ? 1 : -1);
-        foreach (ChunkUpdate chunkUpdate in ChunkUpdates)
+        ChunkUpdates.Sort((x, y) =>
         {
-            Console.WriteLine($"Chunk update: {chunkUpdate.Position} LOD: {chunkUpdate.LOD} Type: {chunkUpdate.UpdateType}");
-        }
+            if (x.LOD < y.LOD)
+            {
+                return 1;
+            }
+            else if (x.LOD > y.LOD)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        });
     }
 
     /// <summary>Gets the chunk updates for the given node.</summary>
