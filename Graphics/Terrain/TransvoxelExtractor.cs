@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using GraphicsPlayground.Graphics.Terrain.Meshing;
+using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Terrain;
 

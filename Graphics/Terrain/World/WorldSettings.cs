@@ -4,7 +4,7 @@ namespace GraphicsPlayground.Graphics.Terrain.World;
 
 public class WorldSettings
 {
-    public Matrix4 Target;
+    public Vector3 TargetPosition;
     public int WorldSize;
     public int ChunkSize;
 }

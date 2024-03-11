@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Terrain.Chunks;
+using GraphicsPlayground.Graphics.Terrain.Meshing;
 using GraphicsPlayground.Util;
 using OpenTK.Mathematics;
 

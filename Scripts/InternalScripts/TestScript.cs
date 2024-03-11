@@ -2,7 +2,7 @@
 using GraphicsPlayground.Graphics.Models.ShapeModels;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Shaders.Data;
-using GraphicsPlayground.Graphics.Terrain;
+using GraphicsPlayground.Graphics.Terrain.Meshing;
 using GraphicsPlayground.Graphics.Terrain.World;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
@@ -14,7 +14,7 @@ namespace GraphicsPlayground.Scripts.InternalScripts;
 
 public class TestScript : IScript
 {
-    public VoxelWorld? World;
+    public VoxelWorld2? World;
     public Engine Engine;
 
     void IScript.OnLoad(Engine engine)
@@ -46,11 +46,20 @@ public class TestScript : IScript
         sphere.Parts.Add(spherePart);
         engine.GenericModels.Add(sphere);
 
-        VoxelWorld world = new(engine, 200);
-        world.TestGenerate();
+        WorldSettings settings = new()
+        {
+            TargetPosition = new Vector3(0, 0, 0),
+            WorldSize = 1000,
+            ChunkSize = 5
+        };
+        VoxelWorld2 world = new(engine, settings);
+        /*world.TestGenerate();
         world.ExtractMesh(LOD);
         World = world;
-        Engine = engine;
+        Engine = engine;*/
+        World = world;
+        world.Start();
+        World?.Update();
 
         engine.OnCustomImGuiLogic += CustomImGui;
     }
@@ -72,7 +81,7 @@ public class TestScript : IScript
 
     void CustomImGui()
     {
-        ImGui.Begin("Terrain LOD");
+        /*ImGui.Begin("Terrain LOD");
         ImGui.SetWindowFontScale(2f);
         if (ImGui.SliderInt("LOD", ref LOD, 1, 12))
         {
@@ -83,21 +92,19 @@ public class TestScript : IScript
                     mesh.Dispose();
                 }
                 Engine.TerrainMeshes.Clear();
-                World?.ExtractMesh(LOD);
+                //World?.ExtractMesh(LOD);
             }
         }
         ImGui.Text($"Meshes: {Engine.TerrainMeshes.Count}");
         ImGui.Text($"FPS: {Engine.FPS}");
         ImGui.SetWindowFontScale(1f);
-        ImGui.End();
+        ImGui.End();*/
     }
 
     bool IScript.ShouldUpdate => true;
 
     void IScript.Update()
     {
-        ImGui.Begin("Test Script");
-        ImGui.Text("Test Script");
-        ImGui.End();
+        //World?.Update();
     }
 }

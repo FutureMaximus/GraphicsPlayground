@@ -5,13 +5,13 @@ using OpenTK.Mathematics;
 namespace GraphicsPlayground.Graphics.Terrain.Chunks;
 
 /// <summary>Compares two chunk updates based on their LOD.</summary>
-public struct ChunkUpdateComparer : IComparer<ChunkUpdate>
+/*public struct ChunkUpdateComparer : IComparer<ChunkUpdate>
 {
     public readonly int Compare(ChunkUpdate x, ChunkUpdate y)
     {
         return x.LOD < y.LOD ? 1 : -1;
     }
-}
+}*/
 
 public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldState)
 {
@@ -30,12 +30,25 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldSt
     /// <summary>The map of chunk updates.</summary>
     public WorldSettings WorldSettings = worldSettings;
 
+    /// <summary>Starts the chunk updater.</summary>
+    public void Start()
+    {
+        TargetPosition = WorldSettings.TargetPosition;
+    }
+
     /// <summary>Executes the chunk updater.</summary>
     public void Execute()
     {
+        // TODO: Use distance from the target position to determine which chunks to update
         GetChunkUpdates(Octree.RootNode);
         BuildTransitionMasks();
-        ChunkUpdates.Sort(new ChunkUpdateComparer());
+        //ChunkUpdates.Sort(new ChunkUpdateComparer());
+        // Sort the chunk updates based on their LOD
+        ChunkUpdates.Sort((x, y) => x.LOD < y.LOD ? 1 : -1);
+        foreach (ChunkUpdate chunkUpdate in ChunkUpdates)
+        {
+            Console.WriteLine($"Chunk update: {chunkUpdate.Position} LOD: {chunkUpdate.LOD} Type: {chunkUpdate.UpdateType}");
+        }
     }
 
     /// <summary>Gets the chunk updates for the given node.</summary>
@@ -118,8 +131,7 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldSt
                 int desiredOtherNeighborBit = otherNode.Depth > chunkUpdate.LOD ? neighborBitOpposite : 0;
                 int otherNeighborsMask = ActiveNodesNeighbors[otherNode.Position];
                 int isolatedOtherNeighborBit = otherNeighborsMask & neighborBitOpposite;
-                bool mismatch = isolatedOtherNeighborBit != desiredOtherNeighborBit;
-                if (mismatch)
+                if (isolatedOtherNeighborBit != desiredOtherNeighborBit)
                 {
                     otherNeighborsMask ^= neighborBitOpposite;
                     if (!ChunkUpdatesMap.TryGetValue(otherNode.Position, out int value))
@@ -150,7 +162,7 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldSt
         }
     }
 
-    /// <summary>Adds merged leaves 
+    /// <summary>Adds merged leaves updates for the given node.</summary>
 
     public void AddMergedLeavesUpdates(OctreeNode fromNode)
     {
@@ -175,7 +187,7 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, WorldState worldSt
             }
             if (!Octree.RemoveNode(child.LocationCode))
             {
-                // TODO: Log error
+                throw new Exception($"Failed to remove child node {child.LocationCode}");
             }
         }
     }

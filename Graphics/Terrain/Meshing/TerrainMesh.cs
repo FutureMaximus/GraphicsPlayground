@@ -4,7 +4,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 
-namespace GraphicsPlayground.Graphics.Terrain;
+namespace GraphicsPlayground.Graphics.Terrain.Meshing;
 
 public sealed class TerrainMesh(int x, int y, int z) : IDisposable
 {

@@ -29,12 +29,13 @@ public struct LinearOctree
         {
             throw new ArgumentException("Root node already exists");
         }
-        NodeMap[1] = new()
+        OctreeNode rootNode = new()
         {
             Depth = RootDepth,
             LocationCode = 1,
             Extents = RootSize / 2
         };
+        NodeMap.TryAdd(1, rootNode);
     }
 
     /// <summary>Returns the root node of the octree.</summary>

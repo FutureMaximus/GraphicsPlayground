@@ -7,7 +7,7 @@ using GraphicsPlayground.Graphics.Shaders;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Graphics.Models.Generic;
-using GraphicsPlayground.Graphics.Terrain;
+using GraphicsPlayground.Graphics.Terrain.Meshing;
 
 namespace GraphicsPlayground.Graphics.Render;
 

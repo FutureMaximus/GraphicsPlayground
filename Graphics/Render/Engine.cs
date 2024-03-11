@@ -12,7 +12,7 @@ using GraphicsPlayground.Graphics.Lighting;
 using GraphicsPlayground.Scripts;
 using GraphicsPlayground.Graphics.Models.Generic;
 using OpenTK.Windowing.Common;
-using GraphicsPlayground.Graphics.Terrain;
+using GraphicsPlayground.Graphics.Terrain.Meshing;
 
 namespace GraphicsPlayground.Graphics.Render;
 
