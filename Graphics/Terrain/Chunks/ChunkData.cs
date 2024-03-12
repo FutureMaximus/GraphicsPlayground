@@ -11,7 +11,7 @@ public class ChunkData
     public List<ChunkUpdate> FilteredChunkUpdates;
     public List<bool> ChunkUniformState;
 
-    public Dictionary<Vector3, Chunk> ChunkMap;
+    public Dictionary<Vector3i, Chunk> ChunkMap;
     public LinearOctree ChunkTree;
     public List<Vector3> ChunksToRemove;
     public List<Chunk> PendingChunks;

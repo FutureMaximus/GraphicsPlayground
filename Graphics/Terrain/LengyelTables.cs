@@ -3,11 +3,40 @@
 namespace GraphicsPlayground.Graphics.Terrain;
 
 /// <summary>
-/// Based off of https://transvoxel.org/.
+/// Referenced from https://transvoxel.org/.
 /// Lengyel, Eric. “Voxel-Based Terrain for Real-Time Virtual Simulations”. PhD diss., University of California at Davis, 2010.
 /// </summary>
 public static class LengyelTables
 {
+    public static readonly Vector3i[] RegularCornerOffset =
+    {
+        new Vector3i(0,0,0), // 0           6-------7
+		new Vector3i(1,0,0), // 1          /|      /|
+		new Vector3i(0,0,1), // 2	      / |     / |  Corners
+		new Vector3i(1,0,1), // 3	     4-------5  |
+		new Vector3i(0,1,0), // 4	     |  2----|--3
+		new Vector3i(1,1,0), // 5	     | /     | /   y z
+		new Vector3i(0,1,1), // 6	     |/      |/    |/
+		new Vector3i(1,1,1)  // 7	     0-------1     o--x
+	};
+
+    public static readonly Vector3i[] TransitionCornerOffset =
+    {
+        new Vector3i(0,0,0), // 0	       B-----------C
+		new Vector3i(1,0,0), // 1         /|          /|
+		new Vector3i(2,0,0), // 2        / |         / |	         
+		new Vector3i(0,1,0), // 3       /  |        /  |                       
+		new Vector3i(1,1,0), // 4      6-----7-----8   |	    Corners      	   
+		new Vector3i(2,1,0), // 5      |   | |     |   |
+		new Vector3i(0,2,0), // 6      |   9 |-----|-- A      y z	
+		new Vector3i(1,2,0), // 7      3-----4-----5  /       |/       
+		new Vector3i(2,2,0), // 8      | /   |     | /        o--x	        	   
+		new Vector3i(0,0,2), // 9      |/    |     |/	           
+		new Vector3i(2,0,2), // A	   0-----1-----2               
+		new Vector3i(0,2,2), // B	   
+		new Vector3i(2,2,2)  // C
+	};
+
     public readonly struct RegularCell(byte gc, byte[] vi)
     {
         private readonly byte geometryCounts = gc; // High nibble is vertex count, low nibble is triangle count.
