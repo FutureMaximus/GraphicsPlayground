@@ -11,10 +11,10 @@ namespace GraphicsPlayground.Graphics.Terrain.Meshing;
 /// Generates the mesh data for a chunk of terrain.
 /// Based off of https://transvoxel.org/.
 /// </summary>
-public class TransvoxelMesher
+public class TransvoxelMesher(in List<float> densityData, DensityGenerator densityGenerator)
 {
-    public readonly List<float> DensityData;
-    public DensityGenerator DensityGenerator;
+    public readonly List<float> DensityData = densityData;
+    public DensityGenerator DensityGenerator = densityGenerator;
     public Vector3i ChunkMin;
     public int LOD;
     public int NeighborsMask;
@@ -23,12 +23,6 @@ public class TransvoxelMesher
     /// <summary> The cell width of the transition cells.</summary>
     public const float TRANSITION_CELL_WIDTH_PERCENTAGE = 0.5f;
     public TerrainMeshRenderContainer MeshDataContainer;
-
-    public TransvoxelMesher(ref List<float> densityData, DensityGenerator densityGenerator)
-    {
-        DensityData = densityData;
-        DensityGenerator = densityGenerator;
-    }
 
     /// <summary>Returns the density value at the given position.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,10 +44,11 @@ public class TransvoxelMesher
     {
         int padding = 1;
         int lodScale = 1 << LOD;
-        List<int> currentCache = new(ChunkSize * ChunkSize * 4);
-        List<int> previousCache = new(ChunkSize * ChunkSize * 4);
-        List<uint> vertexIndices = new(16);
-        List<float> cellValues = new(8);
+        int[] currentCache = new int[ChunkSize * ChunkSize * 4];
+        int[] previousCache = new int[ChunkSize * ChunkSize * 4];
+        uint[] vertexIndices = new uint[16];
+        float[] cellValues = new float[8];
+        Vector3i paddingVec = new(padding);
         for (int y = 0; y < ChunkSize; y++)
         {
             for (int z = 0; z < ChunkSize; z++)
@@ -63,7 +58,7 @@ public class TransvoxelMesher
                     Vector3i cellPos = new(x, y, z);
                     for (int i = 0; i < 8; i++)
                     {
-                        Vector3i voxelPosition = cellPos + new Vector3i(padding) + LengyelTables.RegularCornerOffset[i];
+                        Vector3i voxelPosition = cellPos + paddingVec + LengyelTables.RegularCornerOffset[i];
                         cellValues[i] = GetDensityValue(voxelPosition);
                     }
                     int caseCode = ((cellValues[0] < 0 ? 0x01 : 0)
@@ -109,10 +104,11 @@ public class TransvoxelMesher
                         int vertexIndex = -1;
                         int cachePosX = x - (cacheDir & 1);
                         int cachePosZ = z - ((cacheDir >> 1) & 1);
-                        List<int> selectedCacheDock = ((cacheDir >> 2) & 1) == 1 ? previousCache : currentCache;
+                        int[] selectedCacheDock = ((cacheDir >> 2) & 1) == 1 ? previousCache : currentCache;
                         if (vertexCacheable)
                         {
-                            vertexIndex = selectedCacheDock[cachePosX * ChunkSize * 4 + cachePosZ * 4 + cacheIdx];
+                            // TODO: Validate this previously I encountered a -2 index here
+                            vertexIndex = selectedCacheDock[Math.Abs(cachePosX * ChunkSize * 4 + cachePosZ * 4 + cacheIdx)];
                         }
                         if (!vertexCacheable || vertexIndex == -1)
                         {
@@ -128,7 +124,7 @@ public class TransvoxelMesher
                                 int vertPosX = x + cornerOffset.X;
                                 int vertPosY = y + cornerOffset.Y;
                                 int vertPosZ = z + cornerOffset.Z;
-                                vertex = new Vector3(vertPosX, vertPosY, vertPosZ);
+                                vertex = new Vector3i(vertPosX, vertPosY, vertPosZ);
                                 if (LOD > 0)
                                 {
                                     vertBoundaryMask = ((vertPosX == 0 ? 1 : 0)
@@ -151,7 +147,7 @@ public class TransvoxelMesher
                             }
                             else
                             {
-                                Vector3i vertLocalPos0 = LengyelTables.RegularCornerOffset[cornerIdx0];
+                                Vector3i vertLocalPos0 = cellPos + LengyelTables.RegularCornerOffset[cornerIdx0];
                                 Vector3i vertLocalPos1 = cellPos + LengyelTables.RegularCornerOffset[cornerIdx1];
                                 Vector3 vert0Copy = new(vertLocalPos0.X, vertLocalPos0.Y, vertLocalPos0.Z);
                                 Vector3 vert1Copy = new(vertLocalPos1.X, vertLocalPos1.Y, vertLocalPos1.Z);
@@ -250,7 +246,7 @@ public class TransvoxelMesher
                             MeshDataContainer.MainData.Vertices.Add(vertex);
                             MeshDataContainer.MainData.Normals.Add(normal);
                         }
-                        vertexIndices.Add((uint)vertexIndex);
+                        vertexIndices[i] = (uint)vertexIndex;
                     }
                     long triangleCount = regularCell.GetTriangleCount();
                     byte[] cellIndices = regularCell.Indizes();
@@ -276,24 +272,28 @@ public class TransvoxelMesher
         PolygoniseTransition(MeshDataContainer.LeftTransitionData, TransitionDirection.XMin);
         PolygoniseTransition(MeshDataContainer.DownTransitionData, TransitionDirection.YMin);
         PolygoniseTransition(MeshDataContainer.BackTransitionData, TransitionDirection.ZMin);
+        PolygoniseTransition(MeshDataContainer.RightTransitionData, TransitionDirection.XMax);
+        PolygoniseTransition(MeshDataContainer.UpTransitionData, TransitionDirection.YMax);
+        PolygoniseTransition(MeshDataContainer.ForwardTransitionData, TransitionDirection.ZMax);
     }
 
     public void PolygoniseTransition(TerrainMeshRenderData renderData, TransitionDirection transitionDirection)
     {
         int padding = 1;
         int LODScale = 1 << LOD;
-        List<int> trCurrentCache = new(ChunkSize * 10);
-        List<int> trPreviousCache = new(ChunkSize * 10);
-        List<uint> trVertexIndices = new(36);
-        List<float> trCellValues = new(13);
+        int[] trCurrentCache = new int[ChunkSize * 10];
+        int[] trPreviousCache = new int[ChunkSize * 10];
+        uint[] trVertexIndices = new uint[36];
+        float[] trCellValues = new float[13];
+        Vector3i paddingVec = new(padding);
         for (int y = 0; y < ChunkSize; y++)
         {
             for (int x = 0; x < ChunkSize; x++)
             {
-                Vector3i pos0 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x, y, 0) + new Vector3i(padding);
-                Vector3i pos2 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x + 1, y, 0) + new Vector3i(padding);
-                Vector3i pos6 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x, y + 1, 0) + new Vector3i(padding);
-                Vector3i pos8 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x + 1, y + 1, 0) + new Vector3i(padding);
+                Vector3i pos0 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x, y, 0) + paddingVec;
+                Vector3i pos2 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x + 1, y, 0) + paddingVec;
+                Vector3i pos6 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x, y + 1, 0) + paddingVec;
+                Vector3i pos8 = FaceToLocalSpaceInt(transitionDirection, ChunkSize, x + 1, y + 1, 0) + paddingVec;
                 Vector3 pos1 = ChunkMin + FaceToLocalSpaceFloat(transitionDirection, ChunkSize, x + 0.5f, y, 0) * LODScale;
                 Vector3 pos3 = ChunkMin + FaceToLocalSpaceFloat(transitionDirection, ChunkSize, x, y + 0.5f, 0) * LODScale;
                 Vector3 pos4 = ChunkMin + FaceToLocalSpaceFloat(transitionDirection, ChunkSize, x + 0.5f, y + 0.5f, 0) * LODScale;
@@ -331,9 +331,9 @@ public class TransvoxelMesher
                 }
                 int cacheValidator = ((x != 0 ? 0b01 : 0) | (y != 0 ? 0b10 : 0));
                 byte cellClass = LengyelTables.TransitionCellClass[caseCode];
-                LengyelTables.RegularCell regularCell = LengyelTables.RegularCellData[cellClass];
+                LengyelTables.RegularCell regularCell = LengyelTables.TransitionRegularCellData[cellClass & 0x7F];
                 long vertexCount = regularCell.GetVertexCount();
-                ushort[] edgeCodes = LengyelTables.RegularVertexData[caseCode];
+                ushort[] edgeCodes = LengyelTables.TransitionVertexData[caseCode];
                 for (int i = 0; i < vertexCount; i++)
                 {
                     ushort edgeCode = edgeCodes[i];
@@ -358,7 +358,7 @@ public class TransvoxelMesher
                     bool vertexCacheable = (cacheDir & cacheValidator) == cacheDir;
                     int vertexIndex = -1;
                     int cachePosX = x - (cacheDir & 1);
-                    List<int> selectedCacheDock = (cacheDir & 2) > 0 ? trPreviousCache : trCurrentCache;
+                    int[] selectedCacheDock = (cacheDir & 2) > 0 ? trPreviousCache : trCurrentCache;
                     if (vertexCacheable)
                     {
                         vertexIndex = selectedCacheDock[cacheIdx * ChunkSize + cachePosX];
@@ -538,7 +538,7 @@ public class TransvoxelMesher
                         renderData.Vertices.Add(vertex);
                         renderData.Normals.Add(normal);
                     }
-                    trVertexIndices.Add((uint)vertexIndex);
+                    trVertexIndices[i] = (uint)vertexIndex;
                 }
                 long triangleCount = regularCell.GetTriangleCount();
                 byte[] cellIndices = regularCell.Indizes();

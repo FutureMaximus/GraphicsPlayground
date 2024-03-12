@@ -5,10 +5,6 @@ namespace GraphicsPlayground.Graphics.Terrain.Meshing;
 
 public class TerrainMeshRenderData
 {
-    public int VertexArrayObject;
-    public int VertexBufferObject;
-    public int ElementBufferObject;
-
     public List<Vector3> Vertices = [];
     public List<Vector3> Normals = [];
     public List<uint> Indices = [];
@@ -20,11 +16,5 @@ public class TerrainMeshRenderData
         Normals.Clear();
         Indices.Clear();
     }
-
-    public void Dispose()
-    {
-        GL.DeleteVertexArray(VertexArrayObject);
-        GL.DeleteBuffer(VertexBufferObject);
-        GL.DeleteBuffer(ElementBufferObject);
-    }
+    // TODO: Pass this to terrain mesh.
 }

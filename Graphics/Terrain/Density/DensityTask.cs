@@ -33,7 +33,6 @@ public struct DensityTask
         StartZ = startSamplePosition.Z;
         Generator = new DensityGenerator(settings);
         ChunkPosition = chunkUpdate.Position;
-        IsComplete = false;
     }
 
     public readonly void Execute(int index)

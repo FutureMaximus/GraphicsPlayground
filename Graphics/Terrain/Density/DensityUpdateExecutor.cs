@@ -1,5 +1,6 @@
 ﻿using GraphicsPlayground.Graphics.Terrain.Chunks;
 using GraphicsPlayground.Graphics.Terrain.World;
+using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Terrain.Density;
 
@@ -16,7 +17,6 @@ public class DensityUpdateExecutor(WorldSettings worldSettings, ref WorldState w
         int updateCount = WorldState.ChunkData.ChunkUpdates.Count;
         for (int i = updateCount - 1; i >= 0; i--)
         {
-            //Console.WriteLine($"Starting density task {i}");
             StartTask(WorldState.ChunkData.ChunkUpdates[i]); // TODO: Multi-thread this.
         }
     }
@@ -26,11 +26,13 @@ public class DensityUpdateExecutor(WorldSettings worldSettings, ref WorldState w
         for (int i = DensityTasks.Count - 1; i >= 0; i--)
         {
             DensityTask task = DensityTasks[i];
-            if (task.IsComplete)
+            WorldState.VolumeDensityData[task.ChunkPosition] = [.. task.DensityData];
+            /*if (task.IsComplete)
             {
                 DensityTasks.RemoveAt(i);
+                Console.WriteLine("Density task completed for chunk: " + task.ChunkPosition);
                 WorldState.VolumeDensityData[task.ChunkPosition] = [.. task.DensityData];
-            }
+            }*/
         }
     }
 
@@ -40,8 +42,10 @@ public class DensityUpdateExecutor(WorldSettings worldSettings, ref WorldState w
         {
             return;
         }
-        DensityTask densityTask = new(WorldSettings, GeneratorSettings, chunkUpdate);
-        densityTask.IsComplete = true; // TODO: Move this below when we have multi-threading the separate thread should set this to true.
+        DensityTask densityTask = new(WorldSettings, GeneratorSettings, chunkUpdate)
+        {
+            IsComplete = true // TODO: Move this below when we have multi-threading the separate thread should set this to true.
+        };
         DensityTasks.Add(densityTask);
         int densitySize = WorldSettings.ChunkSize + 3;
         int densitySizeCubed = densitySize * densitySize * densitySize;
