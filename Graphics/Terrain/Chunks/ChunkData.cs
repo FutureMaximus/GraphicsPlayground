@@ -19,7 +19,7 @@ public class ChunkData
 
     public ChunkData(WorldSettings worldSettings)
     {
-        int rootDepth = (int)Math.Round(Math.Log(worldSettings.WorldSize / worldSettings.ChunkSize, 2));
+        int rootDepth = (int)Math.Round(Math.Log(worldSettings.WorldSize / WorldSettings.ChunkSize, 2));
         ChunkMap = [];
         ChunkTree = new LinearOctree(Vector3i.Zero, worldSettings.WorldSize, rootDepth);
         PendingChunks = [];

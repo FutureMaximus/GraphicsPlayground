@@ -142,7 +142,7 @@ public class Engine
         Window.Resize += Window_Resize;
 
         GraphicsUtil.LoadDebugger();
-        ScriptLoader.LoadAllScripts(this, Config.Settings.ScriptPath);
+        ScriptLoader.LoadAllScripts(this);
 
         ForwardRendering forwardRendering = new(this)
         {

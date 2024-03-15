@@ -23,6 +23,7 @@ public static class Config
         public float FontSizePixels;
         public string? FontPath;
         public string ShaderPath;
+        public string AssemblyName;
         public string ScriptPath;
         public bool DebugMode;
     }

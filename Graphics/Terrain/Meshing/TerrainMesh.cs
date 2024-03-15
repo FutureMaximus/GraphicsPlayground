@@ -6,11 +6,12 @@ using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground.Graphics.Terrain.Meshing;
 
-public sealed class TerrainMesh(int x, int y, int z) : IDisposable
+public sealed class TerrainMesh : IDisposable
 {
-    public readonly Vector3 Position = new(x, y, z);
+    public readonly Vector3i Position;
+    public readonly string Name;
     public Vector3 Scale = new(1);
-    public readonly Matrix4 Translation = Matrix4.CreateTranslation(x, y, z);
+    public readonly Matrix4 Translation;
     public int LOD = 1;
 
     public List<Vector3> Vertices = [];
@@ -27,15 +28,24 @@ public sealed class TerrainMesh(int x, int y, int z) : IDisposable
     public bool IsEmpty => Vertices.Count == 0 || Indices.Count == 0 || Normals.Count == 0;
     public bool IsLoaded = false;
 
+    public TerrainMesh(int x, int y, int z)
+    {
+        Position = new(x, y, z);
+        Name = $"Terrain Chunk ({x},{y},{z}) Mesh";
+        Translation = Matrix4.CreateTranslation(Position);
+    }
+
+    public TerrainMesh(Vector3i position, string name)
+    {
+        Position = position;
+        Name = name;
+        Translation = Matrix4.CreateTranslation(Position);
+    }
+
     /// <summary > Loads the mesh into the GPU and returns true if successful. </summary>
     public void Load()
     {
-        if (IsEmpty)
-        {
-            return;
-        }
-
-        string terrainMeshID = $"Terrain Grid ({Position.X},{Position.Y},{Position.Z}) Mesh";
+        string terrainMeshID = $"Terrain Chunk ({Position.X},{Position.Y},{Position.Z}) Mesh";
 
         // ======== Vertex Binding =========
         VertexArrayObject = GL.GenVertexArray();

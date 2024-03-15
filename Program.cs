@@ -1,4 +1,5 @@
-﻿using GraphicsPlayground.Util;
+﻿using GraphicsPlayground.Scripts;
+using GraphicsPlayground.Util;
 using OpenTK.Windowing.Common;
 
 namespace GraphicsPlayground;
@@ -17,16 +18,17 @@ public class Program
             FontSizePixels = 16,
             FontPath = null,
             ShaderPath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Graphics\\Shader\\InternalShaders",
-            ScriptPath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Scripts\\InternalScripts"
+            ScriptPath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Scripts\\InternalScripts",
+            AssemblyName = "GraphicsPlayground",
         };
-
+        ScriptLoader.ASSEMBLY_NAME = Config.Settings.AssemblyName;
+        ScriptLoader.SCRIPT_PATH = Config.Settings.ScriptPath;
         ContextFlags contextFlags;
 #if DEBUG
         contextFlags = ContextFlags.Debug | ContextFlags.ForwardCompatible;
 #else
         contextFlags = ContextFlags.ForwardCompatible;
 #endif
-
         Window window = new((int)Config.Settings.Resolution.X, (int)Config.Settings.Resolution.Y, contextFlags)
         {
             UpdateFrequency = 60,

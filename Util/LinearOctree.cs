@@ -18,7 +18,6 @@ public struct LinearOctree
         RootSize = rootSize;
         RootDepth = rootDepth;
         LeafSize = RootSize >> RootDepth;
-
         CreateRootNode();
     }
 
@@ -35,7 +34,7 @@ public struct LinearOctree
             LocationCode = 1,
             Extents = RootSize / 2
         };
-        NodeMap.TryAdd(1, rootNode);
+        NodeMap.TryAdd(rootNode.LocationCode, rootNode);
     }
 
     /// <summary>Returns the root node of the octree.</summary>
@@ -62,7 +61,14 @@ public struct LinearOctree
     }
 
     /// <summary>Removes the node at the given location code.</summary>
-    public readonly bool RemoveNode(ulong locationCode) => NodeMap.Remove(locationCode, out _);
+    public readonly bool RemoveNode(ulong locationCode)
+    {
+        if (NodeMap.TryRemove(locationCode, out _))
+        {
+            return true;
+        }
+        return false;
+    }
 
     /// <summary>Splits a node</summary>
     public readonly void SplitNode(OctreeNode node)

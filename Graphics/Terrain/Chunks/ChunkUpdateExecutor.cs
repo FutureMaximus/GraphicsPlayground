@@ -25,7 +25,6 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState wor
     public void Start()
     {
         TargetPosition = WorldSettings.TargetPosition;
-        Execute();
     }
 
     /// <summary>Executes the chunk updater.</summary>
@@ -49,6 +48,10 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState wor
                 return 0;
             }
         });
+        foreach (ChunkUpdate chunkUpdate in ChunkUpdates)
+        {
+            Console.WriteLine("Chunk update: " + chunkUpdate.Position + " LOD: " + chunkUpdate.LOD + " Neighbors Mask: " + chunkUpdate.NeighborsMask);
+        }
     }
 
     /// <summary>Gets the chunk updates for the given node.</summary>
@@ -56,24 +59,23 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState wor
     {
         if (CanRender(fromNode))
         {
-            if (ActiveNodes.Contains(fromNode.LocationCode))
+            if (!ActiveNodes.Contains(fromNode.LocationCode))
             {
-                return;
+                ChunkUpdate chunkUpdate = new()
+                {
+                    UpdateType = ChunkUpdateType.Create,
+                    Position = fromNode.Position,
+                    LOD = fromNode.Depth
+                };
+                if (Octree.NodeHasChildren(fromNode))
+                {
+                    AddMergedLeavesUpdates(fromNode);
+                }
+                ChunkUpdates.Add(chunkUpdate);
+                ChunkUpdatesMap.Add(chunkUpdate.Position, ChunkUpdates.Count - 1);
+                ActiveNodes.Add(fromNode.LocationCode);
+                ActiveNodesNeighbors.Add(chunkUpdate.Position, 0);
             }
-            ChunkUpdate chunkUpdate = new()
-            {
-                UpdateType = ChunkUpdateType.Create,
-                Position = fromNode.Position,
-                LOD = fromNode.Depth
-            };
-            if (Octree.NodeHasChildren(fromNode))
-            {
-                AddMergedLeavesUpdates(fromNode);
-            }
-            ChunkUpdates.Add(chunkUpdate);
-            ChunkUpdatesMap.Add(chunkUpdate.Position, ChunkUpdates.Count - 1);
-            ActiveNodes.Add(fromNode.LocationCode);
-            ActiveNodesNeighbors.Add(chunkUpdate.Position, 0);
         }
         else
         {
@@ -126,7 +128,7 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState wor
                 int neighborBitOpposite = ((neighborBit << 3) | (neighborBit >> 3)) & 0b111111;
                 if (otherNode.Depth < chunkUpdate.LOD)
                 {
-                    neighborsMask |= neighborBitOpposite;
+                    neighborsMask |= neighborBit;
                 }
                 int desiredOtherNeighborBit = otherNode.Depth > chunkUpdate.LOD ? neighborBitOpposite : 0;
                 int otherNeighborsMask = ActiveNodesNeighbors[otherNode.Position];

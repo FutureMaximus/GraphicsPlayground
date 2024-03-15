@@ -1,50 +1,61 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using System.Reflection;
+using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Util;
-using System.Collections.Immutable;
-using System.Reflection;
-using System.Text;
 
 namespace GraphicsPlayground.Scripts;
 
-/// <summary>Loads scripts from the given directory.</summary>
+/// <summary>
+/// <para>
+/// The script loader allows you to load C# scripts into the engine at runtime.
+/// </para>
+/// <para>
+/// To implement a dynamic script, you must implement the IScript interface
+/// and use the OnLoad method to initialize the script.
+/// </para>
+/// </summary>
 public static class ScriptLoader
 {
+    /// <summary>The assembly to load the scripts into.</summary>
+    public static string? ASSEMBLY_NAME;
+
     /// <summary>Directory to load scripts from.</summary>
-    private static string? SCRIPT_PATH;
+    public static string? SCRIPT_PATH;
 
     /// <summary>
     /// Loads all scripts in the build path you can specify a custom assembly to load from for external dependencies.
     /// </summary>
-    /// <param name="engine"></param>
-    /// <param name="assembly"></param>
-    /// <exception cref="Exception"></exception>
-    public static void LoadAllScripts(Engine engine, string path, Assembly? assembly = null)
+    /// <param name="engine">The engine reference to pass to the scripts.</param>
+    /// <param name="assembly">A custom assembly to load into the scripts.</param>
+    public static void LoadAllScripts(Engine engine, Assembly? assembly = null)
     {
-        SCRIPT_PATH = path;
         if (SCRIPT_PATH == null)
         {
             throw new Exception("Script path is invalid for script loader.");
         }
+        else if (ASSEMBLY_NAME == null)
+        {
+            throw new Exception("Assembly name is invalid for script loader.");
+        }
         //string assemblyName = assembly?.GetName().Name ?? "";
-        Assembly? coreAssembly = Assembly.LoadFrom("GraphicsPlayground.dll") ?? throw new Exception("Failed to load space assembly.");
+        Assembly? coreAssembly = Assembly.LoadFrom($"{ASSEMBLY_NAME}.dll") ?? throw new Exception($"Failed to load {ASSEMBLY_NAME} assembly.");
         AssemblyName[] assemblyReferences = assembly?.GetReferencedAssemblies() ?? [];
         AssemblyName[] coreReferences = coreAssembly.GetReferencedAssemblies();
         foreach (AssemblyName assemblyRef in assemblyReferences)
         {
             if (!coreReferences.Contains(assemblyRef))
             {
-#pragma warning disable CA1806
                 coreReferences.Append(assemblyRef);
-#pragma warning restore CA1806
             }
         }
 
         // TODO: Load scripts async.
-        //static void afterScriptLoaded()
+        //static void afterScriptLoaded()`
 
         string[] files = Directory.GetFiles(SCRIPT_PATH, "*.cs", SearchOption.AllDirectories);
         foreach (string file in files)
@@ -55,27 +66,38 @@ public static class ScriptLoader
             Type[] types = scriptAssembly.GetTypes();
             foreach (Type type in types)
             {
-                if (type.GetInterfaces().Contains(typeof(IScript)))
+                if (!type.GetInterfaces().Contains(typeof(IScript)))
                 {
-                    if (Activator.CreateInstance(type) is not IScript script)
-                    {
-                        DebugLogger.Log($"<red>Failed to load script: <white>{type.Name}");
-                        continue;
-                    }
-                    if (!script.IsEnabled ?? true) return;
-                    script.OnLoad(engine);
-                    engine.Scripts.Add(script);
-                    DebugLogger.Log($"<aqua>Loaded script: <white>{type.Name}");
+                    continue;
                 }
+                if (Activator.CreateInstance(type) is not IScript script)
+                {
+                    DebugLogger.Log($"<red>Failed to load script: <white>{type.Name}");
+                    continue;
+                }
+                if (!script.IsEnabled ?? true)
+                {
+                    return;
+                }
+                script.OnLoad(engine);
+                engine.Scripts.Add(script);
+                DebugLogger.Log($"<aqua>Loaded script: <white>{type.Name}");
             }
         }
     }
 
+    /// <summary>
+    /// Loads a singular script from source code.
+    /// </summary>
+    /// <param name="sourceCode"></param>
+    /// <param name="assemblyName"></param>
+    /// <param name="assemblies"></param>
+    /// <param name="coreAssembly"></param>
+    /// <exception cref="Exception"></exception>
     public static Assembly LoadScript(string sourceCode, string assemblyName, AssemblyName[] assemblies, Assembly coreAssembly)
     {
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
         CompilationUnitSyntax root = syntaxTree.GetCompilationUnitRoot();
-
         UsingDirectiveSyntax[] defaultUsings =
         [
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")),
@@ -84,10 +106,8 @@ public static class ScriptLoader
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Text")),
             SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Threading.Tasks"))
         ];
-
         root = root.AddUsings(defaultUsings);
         SyntaxTree newTree = CSharpSyntaxTree.Create(root);
-
         CSharpCompilationOptions options = new(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true);
         CSharpCompilation compilation = CSharpCompilation.Create(assemblyName)
             .WithOptions(options)
@@ -95,7 +115,6 @@ public static class ScriptLoader
             .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(coreAssembly.Location))
             .AddSyntaxTrees(newTree);
-
         using MemoryStream stream = new();
         EmitResult result = compilation.Emit(stream);
         if (!result.Success)
@@ -111,7 +130,6 @@ public static class ScriptLoader
             throw new Exception(builder.ToString());
         }
         stream.Seek(0, SeekOrigin.Begin);
-
         return Assembly.Load(stream.ToArray());
     }
 }

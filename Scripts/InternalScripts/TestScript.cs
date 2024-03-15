@@ -2,11 +2,9 @@
 using GraphicsPlayground.Graphics.Models.ShapeModels;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Shaders.Data;
-using GraphicsPlayground.Graphics.Terrain.Meshing;
 using GraphicsPlayground.Graphics.Terrain.World;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
-using ImGuiNET;
 using OpenTK.Mathematics;
 using System.Drawing;
 
@@ -14,7 +12,7 @@ namespace GraphicsPlayground.Scripts.InternalScripts;
 
 public class TestScript : IScript
 {
-    public VoxelWorld2? World;
+    public VoxelWorld? World;
     public Engine Engine;
 
     void IScript.OnLoad(Engine engine)
@@ -49,14 +47,27 @@ public class TestScript : IScript
         WorldSettings settings = new()
         {
             TargetPosition = new Vector3(0, 0, 0),
-            WorldSize = 1000,
-            ChunkSize = 5
+            WorldSize = CoordinateUtilities.NextPowerOf2(2000)
         };
-        VoxelWorld2 world = new(engine, settings);
-        /*world.TestGenerate();
-        world.ExtractMesh(LOD);
+        Noise heightNoise = new();
+        Noise densityNoise = new();
+        Noise caveNoise = new();
+        densityNoise.SetNoiseType(Noise.NoiseType.Perlin);
+        caveNoise.SetNoiseType(Noise.NoiseType.OpenSimplex2S);
+        caveNoise.SetFractalOctaves(6);
+        caveNoise.SetDomainWarpAmp(20);
+        //caveNoise.SetDomainWarpAmp(10);*/
+        GeneratorSettings generatorSettings = new()
+        {
+            HeightmapNoise = heightNoise,
+            DensityNoise = densityNoise,
+            CaveNoise = caveNoise,
+        };
+        VoxelWorld world = new(engine, settings, generatorSettings);
+        //world.TestGenerate();
+        //world.ExtractMesh(LOD);
         World = world;
-        Engine = engine;*/
+        Engine = engine;
         World = world;
         world.Start();
         World?.Update();
@@ -74,7 +85,7 @@ public class TestScript : IScript
 
     void IScript.OnReload()
     {
-        Console.WriteLine("TestScript OnReload");
+        Console.WriteLine("Reloaded!");
     }
 
     static RateLimiter rateLimiter = new(1);

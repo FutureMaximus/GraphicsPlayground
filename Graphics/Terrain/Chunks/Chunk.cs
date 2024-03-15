@@ -1,5 +1,5 @@
 ﻿using GraphicsPlayground.Graphics.Terrain.Meshing;
-using System.Numerics;
+using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Terrain.Chunks;
 
@@ -7,7 +7,8 @@ namespace GraphicsPlayground.Graphics.Terrain.Chunks;
 public sealed class Chunk
 {
     public List<TerrainMesh> TerrainMeshes = [];
-    public Vector3 Position;
+    public Vector3i Position;
+    public Vector3i MinPosition;
     public int LOD;
     public int NeighborsMask;
 }

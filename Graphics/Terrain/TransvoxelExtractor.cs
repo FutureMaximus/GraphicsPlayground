@@ -72,10 +72,10 @@ public class TransvoxelExtractor : ISurfaceExtractor
         }
         byte regularCellsClass = LengyelTables.RegularCellClass[caseCode];
         ushort[] vertexLocations = LengyelTables.RegularVertexData[caseCode];
-        LengyelTables.RegularCell c = LengyelTables.RegularCellData[regularCellsClass];
-        long vertexCount = c.GetVertexCount();
-        long triangleCount = c.GetTriangleCount();
-        byte[] indexOffset = c.Indizes(); // Index offsets for current cell
+        LengyelTables.RegularCell regularCell = LengyelTables.RegularCellData[regularCellsClass];
+        long vertexCount = regularCell.GetVertexCount();
+        long triangleCount = regularCell.GetTriangleCount();
+        byte[] indexOffset = regularCell.Indices(); // Index offsets for current cell
         ushort[] mappedIndices = new ushort[indexOffset.Length]; // Array with real indizes for current cell
         for (int i = 0; i < vertexCount; i++)
         {
@@ -112,7 +112,7 @@ public class TransvoxelExtractor : ISurfaceExtractor
         {
             for (int i = 0; i < 3; i++)
             {
-                mesh.Indices.Add(mappedIndices[c.Indizes()[t * 3 + i]]);
+                mesh.Indices.Add(mappedIndices[regularCell.Indices()[t * 3 + i]]);
             }
         }
     }

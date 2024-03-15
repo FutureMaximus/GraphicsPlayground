@@ -6,5 +6,5 @@ public class WorldSettings
 {
     public Vector3 TargetPosition;
     public int WorldSize;
-    public int ChunkSize;
+    public const int ChunkSize = 32;
 }

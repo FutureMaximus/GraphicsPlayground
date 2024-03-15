@@ -16,5 +16,4 @@ public class TerrainMeshRenderData
         Normals.Clear();
         Indices.Clear();
     }
-    // TODO: Pass this to terrain mesh.
 }

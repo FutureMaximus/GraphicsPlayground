@@ -6,7 +6,6 @@ namespace GraphicsPlayground.Scripts;
 public interface IScript
 {
     /// <summary> Fires when the engine loads and passes a reference of the engine to the script. </summary>
-    /// <param name="engine"></param>
     public void OnLoad(Engine engine);
 
     /// <summary> Custom reload logic for the script that can be ran while the engine is running. </summary>

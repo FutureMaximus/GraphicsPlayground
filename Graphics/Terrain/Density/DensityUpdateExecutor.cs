@@ -26,6 +26,10 @@ public class DensityUpdateExecutor(WorldSettings worldSettings, ref WorldState w
         for (int i = DensityTasks.Count - 1; i >= 0; i--)
         {
             DensityTask task = DensityTasks[i];
+            if (task.DensityData.Length == 0)
+            {
+                continue;
+            }
             WorldState.VolumeDensityData[task.ChunkPosition] = [.. task.DensityData];
             /*if (task.IsComplete)
             {
@@ -42,7 +46,7 @@ public class DensityUpdateExecutor(WorldSettings worldSettings, ref WorldState w
         {
             return;
         }
-        DensityTask densityTask = new(WorldSettings, GeneratorSettings, chunkUpdate)
+        DensityTask densityTask = new(GeneratorSettings, chunkUpdate)
         {
             IsComplete = true // TODO: Move this below when we have multi-threading the separate thread should set this to true.
         };
