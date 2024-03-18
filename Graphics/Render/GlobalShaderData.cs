@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground.Graphics.Render;
 
-/// <summary>Handler for global shader data.</summary>
+/// <summary>Global shader data that can be accessed from any shader.</summary>
 public static class GlobalShaderData
 {
     /// <summary>Uniform buffer object that contains the projection, view, and view position.</summary>
@@ -30,13 +30,10 @@ public static class GlobalShaderData
     public static readonly uint GRID_SIZE_Y = 9;
     public static readonly uint GRID_SIZE_Z = 24;
     public static readonly uint GRID_SIZE = GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z;
-    public static uint MAX_LIGHTS_PER_CLUSTER => _maxLightsPerCluster;
-    private static uint _maxLightsPerCluster;
+    public const uint MAX_LIGHTS_PER_CLUSTER = 50;
 
     public static void LoadBuffers(Engine engine)
     {
-        _maxLightsPerCluster = 50;
-
         // Uniform Buffer Objects (Read-Only)
 
         // ProjView UBO
@@ -73,7 +70,6 @@ public static class GlobalShaderData
 
         // Screen2View SSBO
         Screen2View screen2View;
-        //Matrix4.Invert(engine.ClusteredRenderProjection, out screen2View.InverseProjection);
         screen2View.InverseProjection = Matrix4.Invert(engine.ClusteredRenderProjection);
         screen2View.TileSizeX = GRID_SIZE_X;
         screen2View.TileSizeY = GRID_SIZE_Y;
@@ -164,6 +160,7 @@ public static class GlobalShaderData
         GraphicsUtil.CheckError("Global Shader Data Buffer Init");
     }
 
+    /// <summary>Updates the ProjView UBO with the new projection, view, and view position.</summary>
     public static void UpdateProjViewUBO(ref ProjViewUniform projViewUniform)
     {
         GL.BindBuffer(BufferTarget.UniformBuffer, ProjViewUBO);
@@ -175,7 +172,6 @@ public static class GlobalShaderData
     }
 
     // TODO: Update Light Data if there are changes to the lights.
-
     public static void Dispose()
     {
         GL.DeleteBuffer(ProjViewUBO);

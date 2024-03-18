@@ -32,4 +32,13 @@ public class DensityGenerator(GeneratorSettings settings)
         float noise3D = Noise3D.GetNoise(x, y, z) * NoiseScale;
         return plane + heightMap + noise3D;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public float GetPlanetValue(float x, float y, float z, float planetRadius)
+    {
+        float heightMap = HeightMapNoise.GetNoise(x, z) * HeightScale;
+        float noise3D = Noise3D.GetNoise(x, y, z) * NoiseScale;
+        float sphere = MathF.Sqrt(x * x + y * y + z * z) - planetRadius;
+        return sphere + heightMap + noise3D;
+    }
 }

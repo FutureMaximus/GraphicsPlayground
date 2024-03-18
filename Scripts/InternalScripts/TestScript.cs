@@ -47,15 +47,18 @@ public class TestScript : IScript
         WorldSettings settings = new()
         {
             TargetPosition = new Vector3(0, 0, 0),
-            WorldSize = CoordinateUtilities.NextPowerOf2(2000)
+            WorldSize = CoordinateUtilities.NextPowerOf2(10000)
         };
         Noise heightNoise = new();
+        heightNoise.SetNoiseType(Noise.NoiseType.OpenSimplex2S);
+        heightNoise.SetFractalLacunarity(2);
+        heightNoise.SetFrequency(0.05f);
+        heightNoise.SetDomainWarpAmp(2);
+        heightNoise.SetFractalOctaves(8);
         Noise densityNoise = new();
+        densityNoise.SetNoiseType(Noise.NoiseType.Value);
         Noise caveNoise = new();
-        densityNoise.SetNoiseType(Noise.NoiseType.Perlin);
-        caveNoise.SetNoiseType(Noise.NoiseType.OpenSimplex2S);
-        caveNoise.SetFractalOctaves(6);
-        caveNoise.SetDomainWarpAmp(20);
+        densityNoise.SetNoiseType(Noise.NoiseType.OpenSimplex2);
         //caveNoise.SetDomainWarpAmp(10);*/
         GeneratorSettings generatorSettings = new()
         {
@@ -64,12 +67,10 @@ public class TestScript : IScript
             CaveNoise = caveNoise,
         };
         VoxelWorld world = new(engine, settings, generatorSettings);
-        //world.TestGenerate();
-        //world.ExtractMesh(LOD);
         World = world;
         Engine = engine;
         World = world;
-        world.Start();
+        World?.Start();
         World?.Update();
 
         engine.OnCustomImGuiLogic += CustomImGui;
