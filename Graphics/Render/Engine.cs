@@ -61,7 +61,7 @@ public class Engine
         EngineSettings = new()
         {
             UseDeferredRendering = false,
-            UseClusteredForwardRendering = false,
+            UseClusteredForwardRendering = true,
             UseForwardRendering = true,
             UseDebugRendering = false,
             UseOrthographic = false,
@@ -78,7 +78,6 @@ public class Engine
         AssetStreamer = new(this);
         DeltaTime = 0.0f;
         TimeElapsed = 0.0f;
-
         Random rand = new();
         for (int i = 0; i < EngineSettings.MaximumLights; i++)
         {
@@ -140,34 +139,28 @@ public class Engine
             throw new Exception("Window is null.");
         }
         Window.Resize += Window_Resize;
-
         GraphicsUtil.LoadDebugger();
         ScriptLoader.LoadAllScripts(this);
-
         ForwardRendering forwardRendering = new(this)
         {
             IsEnabled = EngineSettings.UseForwardRendering
         };
-        /*ClusteredForwardRendering clusteredForwardRendering = new(this)
+        ClusteredForwardRendering clusteredForwardRendering = new(this)
         {
             IsEnabled = EngineSettings.UseClusteredForwardRendering
-        };*/
+        };
         RenderPasses.Add(forwardRendering);
-
         // If a texture is non-existing or invalid, use this instead.
         TextureEntries.AddTexture(TextureHelper.GenerateTextureNotFound());
-
         GL.ClearColor(
             EngineSettings.ClearColor[0],
             EngineSettings.ClearColor[1],
             EngineSettings.ClearColor[2],
             EngineSettings.ClearColor[3]
             );
-        
         EngineSettings.AspectRatio = Window.ClientSize.X / (float)Window.ClientSize.Y;
         EngineSettings.WindowSize = Window.ClientSize;
         EngineSettings.WindowPosition = new(0, 0);
-
         if (EngineSettings.UseOrthographic)
         {
             Projection = Matrix4.CreateOrthographicOffCenter(
@@ -203,17 +196,13 @@ public class Engine
                 EngineSettings.DepthFar
                 );
         }
-
         ShaderHandler = new(Config.Settings.ShaderPath);
         Shader screenFBOShader = new(ShaderHandler, "ScreenFBO", "screen");
         Screen = new(screenFBOShader, Window.ClientSize);
         Screen.Load();
-
         GlobalShaderData.LoadBuffers(this);
-
         GL.Enable(EnableCap.DepthTest);
         GL.DepthFunc(DepthFunction.Less);
-
         foreach (IRenderPass renderPass in RenderPasses)
         {
             if (renderPass.IsEnabled)
