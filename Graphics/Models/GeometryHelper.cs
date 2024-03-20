@@ -1,5 +1,5 @@
 ﻿using OpenTK.Mathematics;
-using GraphicsPlayground.Graphics.Models.Generic;
+using GraphicsPlayground.Graphics.Shader.Data;
 
 namespace GraphicsPlayground.Graphics.Models;
 

@@ -36,10 +36,11 @@ public class ClusteredForwardRendering : IRenderPass
     public void Render()
     {
         // This should be moved somewhere else but for now it's fine
-        AABBShader.Use();
+        AABBShader?.Use();
         Shader.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
         Shader.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
         GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);
+
     }
 
     public void Dispose()

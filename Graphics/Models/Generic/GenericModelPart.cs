@@ -4,7 +4,7 @@ using OpenTK.Mathematics;
 namespace GraphicsPlayground.Graphics.Models.Generic;
 
 /// <summary> Generic model part data also known as a bone with renderable meshes. </summary>
-public class GenericModelPart(string name, GenericModel coreModel) : IDisposable
+public class GenericModelPart(string name, GenericModel coreModel) : IModelPart, IDisposable
 {
     // ====== Part Data ======
     /// <summary> The core model that owns this part </summary>

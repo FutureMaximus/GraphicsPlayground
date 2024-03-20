@@ -4,6 +4,7 @@ using GraphicsPlayground.Util;
 using System.Runtime.InteropServices;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using System.Runtime.CompilerServices;
+using GraphicsPlayground.Graphics.Shader.Data;
 
 namespace GraphicsPlayground.Graphics.Models.Generic;
 
