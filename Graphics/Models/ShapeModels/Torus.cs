@@ -1,5 +1,4 @@
-﻿using GraphicsPlayground.Graphics.Models.Generic;
-using GraphicsPlayground.Graphics.Models.Mesh;
+﻿using GraphicsPlayground.Graphics.Models.Mesh;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Models.ShapeModels;
@@ -11,7 +10,7 @@ public class Torus : GenericMesh
     public uint Sides;
     public uint Rings;
 
-    public Torus(GenericModelPart modelPart, float radius, float tubeRadius, uint sides, uint rings) : base("Torus Mesh" , modelPart)
+    public Torus(ModelPart modelPart, float radius, float tubeRadius, uint sides, uint rings) : base("Torus Mesh" , modelPart)
     {
         Radius = radius;
         TubeRadius = tubeRadius;

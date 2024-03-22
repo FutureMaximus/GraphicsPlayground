@@ -1,4 +1,5 @@
-﻿using GraphicsPlayground.Graphics.Models.Generic;
+﻿using GraphicsPlayground.Graphics.Models;
+using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Graphics.Models.ShapeModels;
 using GraphicsPlayground.Graphics.Render;
@@ -18,8 +19,8 @@ public class TestScript : IScript
 
     void IScript.OnLoad(Engine engine)
     {
-        GenericModel sphere = new("sphere");
-        GenericModelPart spherePart = new("Sphere Part", sphere)
+        Model sphere = new("sphere");
+        ModelPart spherePart = new("Sphere Part", sphere)
         {
             LocalTransformation = new()
             {

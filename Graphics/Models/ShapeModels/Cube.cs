@@ -1,11 +1,10 @@
-﻿using GraphicsPlayground.Graphics.Models.Generic;
-using GraphicsPlayground.Graphics.Models.Mesh;
+﻿using GraphicsPlayground.Graphics.Models.Mesh;
 
 namespace GraphicsPlayground.Graphics.Models.ShapeModels;
 
 public class Cube : GenericMesh
 {
-    public Cube(GenericModelPart modelPart) : base("Cube Mesh", modelPart)
+    public Cube(ModelPart modelPart) : base("Cube Mesh", modelPart)
     {
         Generate();
     }

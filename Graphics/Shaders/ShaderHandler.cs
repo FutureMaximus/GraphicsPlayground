@@ -10,11 +10,11 @@ public class ShaderHandler(string shaderPath) : IDisposable
     {
         if (ShaderPath is null)
         {
-            throw new NullReferenceException("Shader path is not set.");
+            throw new NullReferenceException("ShaderProgram path is not set.");
         }
         if (Shaders.ContainsKey(shader.Name))
         {
-            throw new ArgumentNullException($"Shader with name {shader.Name} already exists.");
+            throw new ArgumentNullException($"ShaderProgram with name {shader.Name} already exists.");
         }
         Shaders.Add(shader.Name, shader);
     }
@@ -23,7 +23,7 @@ public class ShaderHandler(string shaderPath) : IDisposable
     {
         if (ShaderPath is null)
         {
-            throw new NullReferenceException("Shader path is not set.");
+            throw new NullReferenceException("ShaderProgram path is not set.");
         }
 
         if (Shaders.TryGetValue(name, out IShader? shader))

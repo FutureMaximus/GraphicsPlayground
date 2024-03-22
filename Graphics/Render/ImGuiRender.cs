@@ -556,7 +556,7 @@ void main()
     private static int CompileShader(string name, ShaderType type, string source)
     {
         int shader = GL.CreateShader(type);
-        LabelObject(ObjectLabelIdentifier.Shader, shader, $"Shader: {name}");
+        LabelObject(ObjectLabelIdentifier.Shader, shader, $"ShaderProgram: {name}");
 
         GL.ShaderSource(shader, source);
         GL.CompileShader(shader);

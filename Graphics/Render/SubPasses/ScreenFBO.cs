@@ -1,13 +1,14 @@
-﻿using GraphicsPlayground.Graphics.Textures;
+﻿using GraphicsPlayground.Graphics.Shaders;
+using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Render.RenderPasses.SubPasses;
 
-public class ScreenFBO(Shader shader, Vector2i windowSize) : IRenderPass
+public class ScreenFBO(ShaderProgram shader, Vector2i windowSize) : IRenderPass
 {
-    public Shader ScreenShader = shader;
+    public ShaderProgram ScreenShader = shader;
     public Vector2i WindowSize = windowSize;
     public int FramebufferObject;
     public Texture2D? ScreenTexture;
@@ -33,7 +34,7 @@ public class ScreenFBO(Shader shader, Vector2i windowSize) : IRenderPass
         GraphicsUtil.CheckError("ScreenFBO Load");
 
         ScreenShader.Use();
-        GraphicsUtil.CheckError("ScreenFBO Shader Use");
+        GraphicsUtil.CheckError("ScreenFBO ShaderProgram Use");
 
         FramebufferObject = GL.GenFramebuffer();
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, FramebufferObject);

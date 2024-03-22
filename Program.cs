@@ -17,7 +17,7 @@ public class Program
             Font = "Arial",
             FontSizePixels = 16,
             FontPath = null,
-            ShaderPath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Graphics\\Shader\\InternalShaders",
+            ShaderPath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Graphics\\ShaderProgram\\InternalShaders",
             ScriptPath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Scripts\\InternalScripts",
             AssemblyName = "GraphicsPlayground",
         };

@@ -1,5 +1,4 @@
-﻿using GraphicsPlayground.Graphics.Models.Generic;
-using GraphicsPlayground.Graphics.Models.Mesh;
+﻿using GraphicsPlayground.Graphics.Models.Mesh;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Models.ShapeModels;
@@ -10,7 +9,7 @@ public class Sphere : GenericMesh
     public uint Stacks;
     public uint Slices;
 
-    public Sphere(GenericModelPart modelPart, float radius, uint stacks, uint slices) : base("Sphere Mesh", modelPart)
+    public Sphere(ModelPart modelPart, float radius, uint stacks, uint slices) : base("Sphere Mesh", modelPart)
     {
         Radius = radius;
         Stacks = stacks;

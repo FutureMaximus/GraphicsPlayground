@@ -13,11 +13,11 @@ public static class GlobalShaderData
 {
     /// <summary>Uniform buffer object that contains the projection, view, and view position.</summary>
     public static int ProjViewUBO { get; private set; }
-    /// <summary>Shader storage buffer object that contains the cluster data.</summary>
+    /// <summary>ShaderProgram storage buffer object that contains the cluster data.</summary>
     public static int ClusterSSBO { get; private set; }
-    /// <summary>Shader storage buffer object that contains the screen to view data.</summary>
+    /// <summary>ShaderProgram storage buffer object that contains the screen to view data.</summary>
     public static int Screen2ViewSSBO { get; private set; }
-    /// <summary>Shader storage buffer object that contains the light data.</summary>
+    /// <summary>ShaderProgram storage buffer object that contains the light data.</summary>
     public static int LightDataSSBO { get; private set; }
     /// <summary>The light index list SSBO.</summary>
     public static int LightIndexListSSBO { get; private set; }
@@ -56,7 +56,7 @@ public static class GlobalShaderData
 
         GL.BindBuffer(BufferTarget.UniformBuffer, 0);
 
-        // Shader Storage Buffer Objects (Read-Write)
+        // ShaderProgram Storage Buffer Objects (Read-Write)
 
         // Cluster Data SSBO
         // 4 bytes for min location (x, y, z) and 4 bytes for max location (x, y, z).
@@ -157,7 +157,7 @@ public static class GlobalShaderData
         GraphicsUtil.CheckError("SSBO 6 (LightIndexGlobalCount) Buffer Base");
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
 
-        GraphicsUtil.CheckError("Global Shader Data Buffer Init");
+        GraphicsUtil.CheckError("Global ShaderProgram Data Buffer Init");
     }
 
     /// <summary>Updates the ProjView UBO with the new projection, view, and view position.</summary>

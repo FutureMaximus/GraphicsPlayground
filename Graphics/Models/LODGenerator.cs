@@ -58,18 +58,18 @@ public static class LODGenerator
         IMesh[] lods = new IMesh[levels];
         for (int i = 0; i < levels; i++)
         {
-            lods[i] = GenerateLOD(refMesh, i, maximumDistance, aggressiveess);
+            //lods[i] = GenerateLOD(refMesh, i, maximumDistance, aggressiveess);
         }
         return lods;
     }
 
-    public static IMesh GenerateLOD(in IMesh refMesh, int level, float maximumDistance, int targetCount, double aggressiveess)
+   /* public static IMesh GenerateLOD(in IMesh refMesh, int level, float maximumDistance, int targetCount, double aggressiveess)
     {
         List<LODGenTriangle> triangles = new();
         List<LODGenVertex> vertices = new();
         List<LODGenRef> refs = new();
 
-    }
+    }*/
 
     public class InternalMethods
     {

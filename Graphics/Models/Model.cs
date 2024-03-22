@@ -69,7 +69,7 @@ public class Model(string name)
 
     public override bool Equals(object? obj)
     {
-        if (obj is GenericModel model)
+        if (obj is Model model)
         {
             return model.ID == ID;
         }

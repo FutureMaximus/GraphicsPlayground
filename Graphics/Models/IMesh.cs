@@ -34,6 +34,6 @@ public interface IMesh : IDisposable
     ///<summary>Renders the mesh.</summary>
     void Render();
 
-    ///<summary>Shader data for this mesh.</summary>
+    ///<summary>ShaderProgram data for this mesh.</summary>
     IShaderData ShaderData { get; set; }
 }

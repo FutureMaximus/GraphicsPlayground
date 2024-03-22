@@ -8,6 +8,7 @@ using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Terrain.Meshing;
 using GraphicsPlayground.Graphics.Models.Mesh;
+using GraphicsPlayground.Graphics.Shaders;
 
 namespace GraphicsPlayground.Graphics.Render;
 
@@ -21,8 +22,8 @@ public class ForwardRendering : IRenderPass
 
     #region Shaders
 
-    private Shader? _pbrShader;
-    private Shader? _terrainShader;
+    private ShaderProgram? _pbrShader;
+    private ShaderProgram? _terrainShader;
     #endregion
 
     public ForwardRendering(Engine engine)
@@ -109,13 +110,13 @@ public class ForwardRendering : IRenderPass
             }
         }
 
-        foreach (GenericModel model in Engine.Models)
+        foreach (Model model in Engine.Models)
         {
-            ModelRenderData modelRenderData = model.ModelRenderData;
+            ModelRenderData modelRenderData = model.RenderData;
             if (!modelRenderData.Visible) continue;
             _pbrShader.SetBool("shadowEnabled", modelRenderData.ShadowEnabled);
 
-            foreach (GenericModelPart corePart in model.Parts)
+            foreach (ModelPart corePart in model.Parts)
             {
                 Matrix4 meshTransform = corePart.Transformation;
                 _pbrShader.SetMatrix4("model", ref meshTransform);
@@ -130,20 +131,23 @@ public class ForwardRendering : IRenderPass
                     }
                     _pbrShader.SetBool("hasTangents", mesh.HasTangents);
 
-                    GenericMeshShaderData shaderData = mesh.ShaderData;
-                    PBRMaterialData pbrMat = shaderData.MaterialData;
-                    Texture2D albedo = pbrMat.AlbedoTexture;
-                    Texture2D normal = pbrMat.NormalTexture;
-                    Texture2D arm = pbrMat.ARMTexture;
-                    if (!albedo.Loaded) continue;
-                    albedo?.Use(TextureUnit.Texture1);
-                    _pbrShader.SetInt("material.albedoMap", 1);
-                    if (!normal.Loaded) continue;
-                    normal?.Use(TextureUnit.Texture2);
-                    _pbrShader.SetInt("material.normalMap", 2);
-                    if (!arm.Loaded) continue;
-                    arm?.Use(TextureUnit.Texture3);
-                    _pbrShader.SetInt("material.ARMMap", 3);
+                    IShaderData shaderData = mesh.ShaderData;
+                    if (shaderData is GenericMeshShaderData genericData)
+                    {
+                        PBRMaterialData pbrMat = genericData.MaterialData;
+                        Texture2D albedo = pbrMat.AlbedoTexture;
+                        Texture2D normal = pbrMat.NormalTexture;
+                        Texture2D arm = pbrMat.ARMTexture;
+                        if (!albedo.Loaded) continue;
+                        albedo?.Use(TextureUnit.Texture1);
+                        _pbrShader.SetInt("material.albedoMap", 1);
+                        if (!normal.Loaded) continue;
+                        normal?.Use(TextureUnit.Texture2);
+                        _pbrShader.SetInt("material.normalMap", 2);
+                        if (!arm.Loaded) continue;
+                        arm?.Use(TextureUnit.Texture3);
+                        _pbrShader.SetInt("material.ARMMap", 3);
+                    }
 
                     mesh.Render();
                 }

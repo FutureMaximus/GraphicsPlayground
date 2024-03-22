@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using GraphicsPlayground.Graphics.Shaders.Data;
+using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground.Graphics.Shader.Data;

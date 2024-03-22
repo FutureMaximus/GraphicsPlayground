@@ -1,6 +1,6 @@
 ﻿namespace GraphicsPlayground.Graphics.Shaders.Data;
 
-///<summary>Shader data for a generic mesh.</summary>
+///<summary>ShaderProgram data for a generic mesh.</summary>
 public struct GenericMeshShaderData : IShaderData
 {
     public readonly string Name => nameof(GenericMeshShaderData);

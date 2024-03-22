@@ -197,7 +197,7 @@ public class Engine
                 );
         }
         ShaderHandler = new(Config.Settings.ShaderPath);
-        Shader screenFBOShader = new(ShaderHandler, "ScreenFBO", "screen");
+        ShaderProgram screenFBOShader = new(ShaderHandler, "ScreenFBO", "screen");
         Screen = new(screenFBOShader, Window.ClientSize);
         Screen.Load();
         GlobalShaderData.LoadBuffers(this);
@@ -254,7 +254,7 @@ public class Engine
         }
         // ==================================
 
-        // ============= UBO (Global Shader Data) =============
+        // ============= UBO (Global ShaderProgram Data) =============
         ProjViewUniform projViewUniform = new(Projection, Camera.View, Camera.Position);
         GlobalShaderData.UpdateProjViewUBO(ref projViewUniform);
         // ====================================================

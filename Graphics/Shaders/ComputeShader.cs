@@ -14,28 +14,28 @@ public class ComputeShader : IShader
     {
         if (handler.ShaderPath is null)
         {
-            throw new NullReferenceException("Compute Shader path is not set.");
+            throw new NullReferenceException("Compute ShaderProgram path is not set.");
         }
         ShaderHandler = handler;
         ShaderHandler.Shaders.Add(name, this);
         Name = name;
         int shaderHandle = GL.CreateShader(ShaderType.ComputeShader);
-        string source = File.ReadAllText(Shader.GetShaderFile(sourceName, "comp", handler));
+        string source = File.ReadAllText(ShaderProgram.GetShaderFile(sourceName, "comp", handler));
         GL.ShaderSource(shaderHandle, source);
-        Shader.CompileShader(shaderHandle, name);
+        ShaderProgram.CompileShader(shaderHandle, name);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Shader, shaderHandle, name);
         ProgramHandle = GL.CreateProgram();
         GL.AttachShader(ProgramHandle, shaderHandle);
         GL.LinkProgram(ProgramHandle);
         GL.DetachShader(ProgramHandle, shaderHandle);
         GL.DeleteShader(shaderHandle);
-        GraphicsUtil.CheckError($"{name} Compute Shader");
+        GraphicsUtil.CheckError($"{name} Compute ShaderProgram");
     }
 
     public void Use()
     {
         GL.UseProgram(ProgramHandle);
-        GraphicsUtil.CheckError($"{Name} Compute Shader Use");
+        GraphicsUtil.CheckError($"{Name} Compute ShaderProgram Use");
     }
 
     public void Dispose()

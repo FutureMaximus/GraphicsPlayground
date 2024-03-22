@@ -1,5 +1,4 @@
-﻿using GraphicsPlayground.Graphics.Models.Generic;
-using GraphicsPlayground.Graphics.Models.Mesh;
+﻿using GraphicsPlayground.Graphics.Models.Mesh;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Models.ShapeModels;
@@ -7,7 +6,7 @@ namespace GraphicsPlayground.Graphics.Models.ShapeModels;
 // Based on https://en.wikipedia.org/wiki/Superformula
 public class SuperFormula : GenericMesh
 {
-    public SuperFormula(GenericModelPart coreModelPart, float[] n, float[] a, float maxScale) : base("SuperFormula Mesh", coreModelPart)
+    public SuperFormula(ModelPart coreModelPart, float[] n, float[] a, float maxScale) : base("SuperFormula Mesh", coreModelPart)
     {
         GenerateSuperFormulaMesh(n, a, maxScale);
     }

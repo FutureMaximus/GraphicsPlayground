@@ -5,21 +5,21 @@ using GraphicsPlayground.Util;
 namespace GraphicsPlayground.Graphics.Shaders;
 
 /// <summary>
-/// Shader class for handling general OpenGL shaders with vertex, 
+/// ShaderProgram class for handling general OpenGL shaders with vertex, 
 /// fragment, and optional geometry, tessellation control, and tessellation evaluation shaders.
 /// </summary>
-public sealed class Shader : IShader
+public sealed class ShaderProgram : IShader
 {
     /// <summary> The shader handler that owns this shader. </summary>
     public ShaderHandler ShaderHandler { get; }
     public string Name { get; }
     public int ProgramHandle { get; }
 
-    public Shader(ShaderHandler handler, string name, string sourceName)
+    public ShaderProgram(ShaderHandler handler, string name, string sourceName)
     {
         if (handler.ShaderPath is null)
         {
-            throw new NullReferenceException("Shader path is not set.");
+            throw new NullReferenceException("ShaderProgram path is not set.");
         }
 
         Name = name;
@@ -128,7 +128,7 @@ public sealed class Shader : IShader
         }
         GL.DetachShader(ProgramHandle, fragmentShader);
 
-        // Shader cleanup
+        // ShaderProgram cleanup
         GL.DeleteShader(vertexShader);
         if (tessControlSource != string.Empty && tessControlShader != -1)
         {
@@ -172,7 +172,7 @@ public sealed class Shader : IShader
     {
         if (!GL.IsShader(shader))
         {
-            throw new Exception($"Shader({shader}) is not a valid shader.");
+            throw new Exception($"ShaderProgram({shader}) is not a valid shader.");
         }
         GL.CompileShader(shader);
 
@@ -180,7 +180,7 @@ public sealed class Shader : IShader
         if (code != (int)All.True)
         {
             var infoLog = GL.GetShaderInfoLog(shader);
-            throw new Exception($"Error occurred while compiling Shader({shader}) for shader {shaderName}: \n\n{infoLog}");
+            throw new Exception($"Error occurred while compiling ShaderProgram({shader}) for shader {shaderName}: \n\n{infoLog}");
         }
     }
 
@@ -199,13 +199,13 @@ public sealed class Shader : IShader
             throw new Exception($"Error occurred while linking Program({program}) for shader {shaderName}: {code}");
         }
 
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Program, program, $"Shader Program: {shaderName}");
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Program, program, $"ShaderProgram Program: {shaderName}");
     }
 
     public void Use()
     {
         GL.UseProgram(ProgramHandle);
-        GraphicsUtil.CheckError($"{Name} Shader Use");
+        GraphicsUtil.CheckError($"{Name} ShaderProgram Use");
     }
 
     public int GetAttribLocation(string attribName) => GL.GetAttribLocation(ProgramHandle, attribName);
@@ -262,7 +262,7 @@ public sealed class Shader : IShader
     public void SetVector4(string name, Vector4 data) => GL.Uniform4(GetUniformLocation(name), data);
     public static void SetVector4(int location, Vector4 data) => GL.Uniform4(location, data);
 
-    public static implicit operator int(Shader shader) => shader.ProgramHandle;
+    public static implicit operator int(ShaderProgram shader) => shader.ProgramHandle;
 
     public void Dispose()
     {

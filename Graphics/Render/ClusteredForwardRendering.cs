@@ -28,8 +28,8 @@ public class ClusteredForwardRendering : IRenderPass
             return;
         }
         AABBShader.Use();
-        Shader.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
-        Shader.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
+        ShaderProgram.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
+        ShaderProgram.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
         GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);
     }
 
@@ -37,8 +37,8 @@ public class ClusteredForwardRendering : IRenderPass
     {
         // This should be moved somewhere else but for now it's fine
         AABBShader?.Use();
-        Shader.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
-        Shader.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
+        ShaderProgram.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
+        ShaderProgram.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
         GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);
 
     }
