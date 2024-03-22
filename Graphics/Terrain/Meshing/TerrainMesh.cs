@@ -22,7 +22,7 @@ public sealed class TerrainMesh : IDisposable
     public int IndicesLength = 0;
 
     public int VertexBufferObject;
-    public int ElementBufferObject;
+    public int IndexBufferObject;
     public int VertexArrayObject;
 
     public bool IsEmpty => Vertices.Count == 0 || Indices.Count == 0 || Normals.Count == 0;
@@ -49,7 +49,6 @@ public sealed class TerrainMesh : IDisposable
 
         // ======== Vertex Binding =========
         VertexArrayObject = GL.GenVertexArray();
-
         GL.BindVertexArray(VertexArrayObject);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.VertexArray, VertexArrayObject, $"{terrainMeshID} VAO");
 
@@ -75,9 +74,9 @@ public sealed class TerrainMesh : IDisposable
         // =================================
 
         // ======== Index Binding ==========
-        ElementBufferObject = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ElementBufferObject, $"{terrainMeshID} EBO");
+        IndexBufferObject = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, IndexBufferObject);
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, IndexBufferObject, $"{terrainMeshID} EBO");
         uint[] indices = [.. Indices];
         IndicesLength = indices.Length;
         GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
@@ -99,7 +98,7 @@ public sealed class TerrainMesh : IDisposable
             Load();
         }
         GL.BindVertexArray(VertexArrayObject);
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, IndexBufferObject);
         GL.DrawElements(PrimitiveType.Triangles, IndicesLength, DrawElementsType.UnsignedInt, 0);
         GL.BindVertexArray(0);
     }
@@ -116,7 +115,7 @@ public sealed class TerrainMesh : IDisposable
         Indices.Clear();
         GL.DeleteVertexArray(VertexArrayObject);
         GL.DeleteBuffer(VertexBufferObject);
-        GL.DeleteBuffer(ElementBufferObject);
+        GL.DeleteBuffer(IndexBufferObject);
         GC.SuppressFinalize(this);
     }
 }

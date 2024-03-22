@@ -9,7 +9,4 @@ public class ModelRenderData
 
     /// <summary> Whether the model is visible this will stop it from rendering if false. </summary>
     public bool Visible = true;
-
-    /// <summary> The color of the model. </summary>
-    public Color Color = Color.White;
 }

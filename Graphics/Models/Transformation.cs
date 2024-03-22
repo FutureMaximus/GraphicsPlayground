@@ -2,6 +2,7 @@
 
 namespace GraphicsPlayground.Graphics.Models;
 
+///<summary>Represents a transformation in 3D space.</summary>
 public sealed class Transformation
 {
     public bool HasChanged = true;
@@ -58,10 +59,7 @@ public sealed class Transformation
         Rotation = rotation;
         Scale = scale;
     }
-    public Transformation(Matrix4 data)
-    {
-        Data = data;
-    }
+    public Transformation(Matrix4 data) => Data = data;
 
     public Matrix4 Data
     {

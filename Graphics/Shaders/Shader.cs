@@ -5,9 +5,10 @@ using GraphicsPlayground.Util;
 namespace GraphicsPlayground.Graphics.Shaders;
 
 /// <summary>
-/// Shader class for handling general OpenGL shaders with vertex, fragment, and optional geometry, tessellation control, and tessellation evaluation shaders.
+/// Shader class for handling general OpenGL shaders with vertex, 
+/// fragment, and optional geometry, tessellation control, and tessellation evaluation shaders.
 /// </summary>
-public class Shader : IShader
+public sealed class Shader : IShader
 {
     /// <summary> The shader handler that owns this shader. </summary>
     public ShaderHandler ShaderHandler { get; }
@@ -49,7 +50,8 @@ public class Shader : IShader
             tessControlShader = GL.CreateShader(ShaderType.TessControlShader);
             GL.ShaderSource(tessControlShader, tessControlSource);
             CompileShader(tessControlShader, name);
-        } catch (FileNotFoundException) { }
+        }
+        catch (FileNotFoundException) { }
 
         // Tessellation Evaluation shader
         string tessEvalSource = string.Empty;
@@ -60,7 +62,8 @@ public class Shader : IShader
             tessEvalShader = GL.CreateShader(ShaderType.TessEvaluationShader);
             GL.ShaderSource(tessEvalShader, tessEvalSource);
             CompileShader(tessEvalShader, name);
-        } catch (FileNotFoundException) { }
+        }
+        catch (FileNotFoundException) { }
 
         // Geometry shader
         string geometrySource = string.Empty;
@@ -191,7 +194,6 @@ public class Shader : IShader
         GL.LinkProgram(program);
 
         GL.GetProgram(program, GetProgramParameterName.LinkStatus, out var code);
-        //GraphicsUtil.CheckError($"Shader {shaderName} link");
         if (code != (int)All.True)
         {
             throw new Exception($"Error occurred while linking Program({program}) for shader {shaderName}: {code}");
@@ -268,3 +270,4 @@ public class Shader : IShader
         GC.SuppressFinalize(this);
     }
 }
+

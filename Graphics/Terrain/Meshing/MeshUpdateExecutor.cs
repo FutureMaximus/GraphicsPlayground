@@ -4,8 +4,6 @@ using GraphicsPlayground.Graphics.Terrain.Density;
 using GraphicsPlayground.Graphics.Terrain.World;
 using GraphicsPlayground.Util;
 using OpenTK.Mathematics;
-using System.Runtime.InteropServices;
-using System;
 
 namespace GraphicsPlayground.Graphics.Terrain.Meshing;
 

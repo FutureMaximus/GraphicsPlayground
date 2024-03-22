@@ -1,4 +1,5 @@
 ﻿using GraphicsPlayground.Graphics.Models.Generic;
+using GraphicsPlayground.Graphics.Models.Mesh;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Models.ShapeModels;

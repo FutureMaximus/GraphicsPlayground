@@ -3,15 +3,13 @@ using OpenTK.Mathematics;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
-using GraphicsPlayground.Graphics.Models.Generic;
-using GraphicsPlayground.Graphics.Animations;
+using GraphicsPlayground.Graphics.Models.Mesh;
 
 namespace GraphicsPlayground.Graphics.Models;
 
 /// <summary>
 /// Processes PBR models and stores them in a list.
 /// When you get a model from the entry it is removed from the list.
-/// 
 /// <para>
 /// For arm textures the file name must contain arm, rough, metal, or ao in it otherwise it will not be loaded.
 /// If there is no arm texture then roughness, metallic and ambient occlusion textures will be loaded instead.
@@ -19,38 +17,23 @@ namespace GraphicsPlayground.Graphics.Models;
 /// </summary>
 public static class ModelLoader
 {
-    private static readonly List<GenericModel> _processedModels = [];
+    private static readonly List<Model> _processedModels = [];
     private static readonly List<LoadedTexture> _processedTextures = [];
 
-    public struct ModelEntry
+    public struct ModelEntry(string name, string modelFile, string path, string texturePath)
     {
-        public string Name;
-        public string ModelFile;
-        public string Path;
-        public string TexturePath;
-        public GenericModel? CoreModel;
-
-        public ModelEntry(string name, string modelFile, string path, string texturePath)
-        {
-            Name = name;
-            ModelFile = modelFile;
-            Path = path;
-            TexturePath = texturePath;
-        }
+        public string Name = name;
+        public string ModelFile = modelFile;
+        public string Path = path;
+        public string TexturePath = texturePath;
+        public Model? CoreModel;
     }
 
-    public struct LoadedTexture
+    public struct LoadedTexture(string modelName, string name, string path)
     {
-        public string ModelInternalName;
-        public string Name;
-        public string Path;
-
-        public LoadedTexture(string modelName, string name, string path)
-        {
-            ModelInternalName = modelName;
-            Name = name;
-            Path = path;
-        }
+        public string ModelInternalName = modelName;
+        public string Name = name;
+        public string Path = path;
 
         public override readonly bool Equals(object? obj)
         {
@@ -116,7 +99,7 @@ public static class ModelLoader
             throw new AssimpException($"Failed to load model {modelEntry.Name}: {e}");
         }
         string internalName = modelEntry.Path.Split('\\').Last().Split('/').Last();
-        GenericModel model = new(internalName);
+        Model model = new(internalName);
         modelEntry.CoreModel = model;
         _processedModels.Add(model);
         ProcessNode(scene.RootNode, scene, modelEntry, assetStreamer);
@@ -129,13 +112,13 @@ public static class ModelLoader
     /// <returns>
     /// The model if it exists, otherwise null.
     /// </returns>
-    public static GenericModel? GetModel(string name)
+    public static Model? GetModel(string name)
     {
         for (int i = 0; i < _processedModels.Count; i++)
         {
             if (_processedModels[i].Name == name)
             {
-                GenericModel model = _processedModels[i];
+                Model model = _processedModels[i];
                 _processedModels.RemoveAt(i);
                 foreach (LoadedTexture loadedTex in _processedTextures.ToList())
                 {
@@ -150,11 +133,11 @@ public static class ModelLoader
         return null;
     }
 
-    private static void ProcessNode(Node Node, Scene scene, ModelEntry modelEntry, AssetStreamer assetStreamer, GenericModelPart? parent = null)
+    private static void ProcessNode(Node Node, Scene scene, ModelEntry modelEntry, AssetStreamer assetStreamer, ModelPart? parent = null)
     {
         if (modelEntry.CoreModel is null) return;
-        GenericModelPart modelPart = new(Node.Name, modelEntry.CoreModel);
-        if (parent != null)
+        ModelPart modelPart = new(Node.Name, modelEntry.CoreModel);
+        if (parent is not null)
         {
             modelPart.Parent = parent;
         }
@@ -172,13 +155,20 @@ public static class ModelLoader
 
         for (int i = 0; i < Node.MeshCount; i++)
         {
-            Mesh mesh = scene.Meshes[Node.MeshIndices[i]];
-            GenericMesh? modelMesh = ProcessMesh(mesh, scene, modelEntry, assetStreamer, modelPart);
+            Assimp.Mesh assimpMesh = scene.Meshes[Node.MeshIndices[i]];
+            IMesh? modelMesh;
+            if (assimpMesh.BoneCount > 0)
+            {
+                modelMesh = ProcessMesh(typeof(SkeletalMesh), assimpMesh, scene, modelEntry, assetStreamer, modelPart);
+            }
+            else
+            {
+                modelMesh = ProcessMesh(typeof(GenericMesh), assimpMesh, scene, modelEntry, assetStreamer, modelPart);
+            }
             if (modelMesh is null)
             {
                 continue;
             }
-            ExtractBoneWeightForVertices(mesh, ref modelEntry.CoreModel, ref modelMesh);
             modelPart.Meshes.Add(modelMesh);
         }
 
@@ -188,16 +178,17 @@ public static class ModelLoader
         }
     }
 
-    private static void ExtractBoneWeightForVertices(Mesh mesh, ref GenericModel model, ref GenericMesh genericMesh)
+    private static void ExtractBonesForSkeletalMesh(Assimp.Mesh mesh, ref Model? model, ref SkeletalMesh skeletalMesh)
     {
+        if (model is null) return;
         for (int boneIndex = 0; boneIndex < mesh.BoneCount; boneIndex++)
         {
             int boneID = -1;
             string boneName = mesh.Bones[boneIndex].Name;
 
-            if (!model.Bones.TryGetValue(boneName, out BoneInfo outBoneVal))
+            /*if (!model.Bones.TryGetValue(boneName, out BoneInfo outBoneVal))
             {
-                Matrix4x4 offsetMat = mesh.Bones[boneIndex].OffsetMatrix;
+                Matrix4x4 offsetMat = assimpMesh.Bones[boneIndex].OffsetMatrix;
                 // TODO: Is this properly implemented?
                 Matrix4 offset = new(offsetMat.A1, offsetMat.A2, offsetMat.A3, offsetMat.A4,
                     offsetMat.B1, offsetMat.B2, offsetMat.B3, offsetMat.B4,
@@ -218,8 +209,8 @@ public static class ModelLoader
                 throw new AssimpException($"Bone ID is -1 for bone {boneName} in model {model.Name}");
             }
 
-            List<VertexWeight> weights = mesh.Bones[boneIndex].VertexWeights;
-            int weightCount = mesh.Bones[boneIndex].VertexWeightCount;
+            List<VertexWeight> weights = assimpMesh.Bones[boneIndex].VertexWeights;
+            int weightCount = assimpMesh.Bones[boneIndex].VertexWeightCount;
 
             for (int i = 0; i < weightCount; i++)
             {
@@ -238,11 +229,11 @@ public static class ModelLoader
 
                 genericMesh.BoneIDs.Add(boneID);
                 genericMesh.Weights.Add(weight);
-            }
+            }*/
         }
     }
 
-    private static GenericMesh? ProcessMesh(Mesh mesh, Scene scene, ModelEntry modelEntry, AssetStreamer assetStreamer, GenericModelPart modelPart)
+    private static IMesh? ProcessMesh(Type meshType, Assimp.Mesh mesh, Scene scene, ModelEntry modelEntry, AssetStreamer assetStreamer, ModelPart modelPart)
     {
         List<Vector3> positions = [];
         List<Vector3> normals = [];
@@ -345,6 +336,21 @@ public static class ModelLoader
             Tangents = tangents,
             Indices = indices
         };
+
+        if (meshType == typeof(SkeletalMesh))
+        {
+            SkeletalMesh skeletalMesh = new(mesh.Name, modelPart)
+            {
+                ShaderData = meshShaderData,
+                Vertices = positions,
+                TextureCoords = textureCoords,
+                Normals = normals,
+                Tangents = tangents,
+                Indices = indices
+            };
+            ExtractBonesForSkeletalMesh(mesh, ref modelEntry.CoreModel, ref skeletalMesh);
+            return skeletalMesh;
+        }
 
         return modelMesh;
     }

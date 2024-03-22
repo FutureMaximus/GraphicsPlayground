@@ -4,33 +4,30 @@ using GraphicsPlayground.Util;
 using System.Runtime.InteropServices;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using System.Runtime.CompilerServices;
-using GraphicsPlayground.Graphics.Shader.Data;
+using GraphicsPlayground.Graphics.Models.Generic;
 
-namespace GraphicsPlayground.Graphics.Models.Generic;
+namespace GraphicsPlayground.Graphics.Models.Mesh;
 
-/// <summary>
-/// Mesh data for a generic model.
-/// </summary>
-public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
+/// <summary>Generic mesh data.</summary>
+public class GenericMesh(string name, ModelPart modelPart) : IMesh
 {
     /// <summary> Model part that owns this mesh. </summary>
-    public GenericModelPart ParentPart = modelPart;
-    public string Name = name;
-    public Guid ID => _id;
-    private readonly Guid _id = Guid.NewGuid();
-    public GenericMeshShaderData ShaderData;
+    public ModelPart ParentPart { get; set; } = modelPart;
+    public string Name { get; set; } = name;
+    public int LOD { get; set; } = 0;
+    public Guid ID { get; set; } = Guid.NewGuid();
+    public IShaderData ShaderData { get; set; } = new GenericMeshShaderData();
+    public BufferUsageHint MeshUsageHint { get; set; } = BufferUsageHint.StaticDraw;
 
     // ====== Mesh Data ======
-    public List<Vector3> Vertices = [];
+    public List<Vector3> Vertices { get; set; } = [];
     public int VerticesLength = 0;
-    public List<uint> Indices = [];
+    public List<uint> Indices { get; set; } = [];
     public int IndicesLength = 0;
     public List<Vector2> TextureCoords = [];
     public int TextureCoordsLength = 0;
     public List<Vector3> Normals = [];
     public int NormalsLength = 0;
-    public List<int> BoneIDs = new(GraphicsUtil.MaxBoneInfluence);
-    public List<float> Weights = new(GraphicsUtil.MaxBoneInfluence);
     public List<Vector3>? Tangents;
     public int TangentsLength = 0;
     public bool HasTangents = false;
@@ -61,16 +58,6 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
             throw new ArgumentException("Texture coordinates are empty.");
         }
 
-        /*if (BoneIDs.Count == 0 || Weights.Count == 0)
-        {
-            // Fill up the bone weights and IDs with empty data.
-            for (int i = 0; i < Vertices.Count; i++)
-            {
-                BoneIDs.AddRange(GraphicsUtil.EmptyBoneIDs());
-                Weights.AddRange(GraphicsUtil.EmptyBoneWeights());
-            }
-        }*/
-
         // ========= Vertex Binding ========
         List<GenericVertexData> data = GeometryHelper.GetVertexDatas(Vertices, Normals, TextureCoords);
         if (HasTangents != false)
@@ -87,19 +74,18 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
         {
             if (Normals[i] == Vector3.Zero)
             {
-                Normals[i] = Vector3.UnitZ;
+                Normals[i] = Vector3.UnitY;
             }
         }
 
         VertexArrayObject = GL.GenVertexArray();
-
         GL.BindVertexArray(VertexArrayObject);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.VertexArray, VertexArrayObject, $"{Name} VAO");
 
         VertexBufferObject = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, VertexBufferObject, $"{Name} VBO");
-        GL.BufferData(BufferTarget.ArrayBuffer, data.Count * Unsafe.SizeOf<GenericVertexData>(), data.ToArray(), ParentPart.ModelUsageHint);
+        GL.BufferData(BufferTarget.ArrayBuffer, data.Count * Unsafe.SizeOf<GenericVertexData>(), data.ToArray(), MeshUsageHint);
         GraphicsUtil.CheckError($"{Name} VBO Load");
 
         int stride = Marshal.SizeOf(typeof(GenericVertexData));
@@ -135,10 +121,10 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
                 BufferTarget.ArrayBuffer,
                 Tangents?.Count * Marshal.SizeOf(typeof(Vector3)) ?? 0,
                 Tangents?.ToArray() ?? [],
-                ParentPart.ModelUsageHint);
+                MeshUsageHint);
             GraphicsUtil.CheckError($"{Name} TangentBufferObject Load");
 
-            // Layout 5: Tangent
+            // Layout 3: Tangent
             GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, Marshal.SizeOf(typeof(Vector3)), 0);
             GL.EnableVertexAttribArray(3);
 
@@ -153,7 +139,7 @@ public class GenericMesh(string name, GenericModelPart modelPart) : IDisposable
         ElementBufferObject = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
         uint[] indices = [.. Indices];
-        GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, ParentPart.ModelUsageHint);
+        GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, MeshUsageHint);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ElementBufferObject, $"{Name} EBO");
         GraphicsUtil.CheckError($"{Name} EBO Load");
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);

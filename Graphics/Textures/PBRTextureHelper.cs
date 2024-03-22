@@ -10,12 +10,7 @@ public static class PBRTextureHelper
     /// The texture file names must contain the following:
     /// </para>
     /// <para>
-    /// albedo,
-    /// normal,
-    /// metallic,
-    /// roughness,
-    /// ao,
-    /// or arm.
+    /// albedo, normal, metallic, roughness, ao, or arm.
     /// </para>
     /// <para>
     /// If there is no arm texture, ao, metallic, or roughness texture will be used instead as an arm texture.

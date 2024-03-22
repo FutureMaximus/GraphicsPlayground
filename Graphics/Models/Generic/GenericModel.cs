@@ -1,4 +1,5 @@
 ﻿using GraphicsPlayground.Graphics.Animations;
+using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Util;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -16,7 +17,7 @@ public class GenericModel(string name) : IModel
     /// if it is static use StaticDraw
     /// and if it is dynamic use DynamicDraw.
     /// </summary>
-    public BufferUsageHint ModelUsageHint = BufferUsageHint.StaticDraw;
+    public BufferUsageHint ModelUsageHint => BufferUsageHint.StaticDraw;
 
     public Vector3 Position = Vector3.Zero;
     public Quaternion Rotation = Quaternion.Identity;
@@ -41,7 +42,6 @@ public class GenericModel(string name) : IModel
     /// <summary> The bone counter. </summary>
     public int BoneCounter = 0;
 
-    /// <summary> The unique identifier of the model see <see cref="IIdentifiable"/>. </summary>
     public Guid ID => _id;
     private readonly Guid _id = Guid.NewGuid();
 

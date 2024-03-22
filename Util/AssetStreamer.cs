@@ -86,10 +86,10 @@ public class AssetStreamer(Engine engine)
         });
     }
 
-    public class StreamingAsset : IAssetHolder
+    public class StreamingAsset(string name, string path, Action<byte[], object?> afterLoaded, object? assetData) : IAssetHolder
     {
-        public string Name;
-        public string Path;
+        public string Name = name;
+        public string Path = path;
         /// <summary>
         /// Specify an optional action to execute after the data is loaded while the asset is on a separate thread.
         /// </summary>
@@ -97,18 +97,10 @@ public class AssetStreamer(Engine engine)
         /// <summary>
         /// Specify the action that occurs after the asset is loaded this will run on the main thread.
         /// </summary>
-        public Action<byte[], object?> AfterLoadedExecute;
+        public Action<byte[], object?> AfterLoadedExecute = afterLoaded;
         public bool Loaded;
         public byte[]? Data;
-        public object? AssetObjectData;
-
-        public StreamingAsset(string name, string path, Action<byte[], object?> afterLoaded, object? assetData)
-        {
-            Name = name;
-            Path = path;
-            AfterLoadedExecute = afterLoaded;
-            AssetObjectData = assetData;
-        }
+        public object? AssetObjectData = assetData;
 
         string IAssetHolder.Name
         {
@@ -124,10 +116,10 @@ public class AssetStreamer(Engine engine)
     }
 
 
-    public class StreamingAssetPackage : IAssetHolder
+    public class StreamingAssetPackage(string name, string[] paths, Action<byte[][], object?> afterLoaded, object? assetData) : IAssetHolder
     {
-        public string Name;
-        public string[] Paths;
+        public string Name = name;
+        public string[] Paths = paths;
         /// <summary>
         /// Specify an optional action to execute after the data is loaded while the asset is on a separate thread.
         /// </summary>
@@ -135,18 +127,10 @@ public class AssetStreamer(Engine engine)
         /// <summary>
         /// Specify the action that occurs after the asset is loaded this will run on the main thread.
         /// </summary>
-        public Action<byte[][], object?> AfterLoadedExecute;
+        public Action<byte[][], object?> AfterLoadedExecute = afterLoaded;
         public bool Loaded;
         public byte[][]? Data;
-        public object? AssetObjectData;
-
-        public StreamingAssetPackage(string name, string[] paths, Action<byte[][], object?> afterLoaded, object? assetData)
-        {
-            Name = name;
-            Paths = paths;
-            AfterLoadedExecute = afterLoaded;
-            AssetObjectData = assetData;
-        }
+        public object? AssetObjectData = assetData;
 
         string IAssetHolder.Name
         {

@@ -3,16 +3,16 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Collections.Concurrent;
 using GraphicsPlayground.Graphics.Textures;
-using GraphicsPlayground.Graphics.Shaders;
 using OpenTK.Windowing.Desktop;
+using GraphicsPlayground.Graphics.Shaders;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Render.RenderPasses.SubPasses;
 using GraphicsPlayground.Graphics.Lighting.Lights;
 using GraphicsPlayground.Graphics.Lighting;
 using GraphicsPlayground.Scripts;
-using GraphicsPlayground.Graphics.Models.Generic;
 using OpenTK.Windowing.Common;
 using GraphicsPlayground.Graphics.Terrain.Meshing;
+using GraphicsPlayground.Graphics.Models;
 
 namespace GraphicsPlayground.Graphics.Render;
 
@@ -28,8 +28,8 @@ public class Engine
     public Matrix4 Orthographic;
     public Settings EngineSettings;
     public readonly List<IRenderPass> RenderPasses = [];
-    public readonly List<GenericModel> GenericModels = [];
-    public readonly List<TerrainMesh> TerrainMeshes = [];
+    public readonly List<Model> Models = [];
+    public readonly List<TerrainMesh> TerrainMeshes = []; // TODO: Move to models.
     /// <summary> Streamed assets that may have tasks to be ran on the main thread </summary>
     public readonly ConcurrentStack<IAssetHolder> StreamedAssets = new();
     public readonly AssetStreamer AssetStreamer;

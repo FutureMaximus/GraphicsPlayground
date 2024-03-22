@@ -1,21 +1,20 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
 using OpenTK.Mathematics;
 using Assimp;
 using Assimp.Unmanaged;
 
 namespace GraphicsPlayground.Graphics.Animations;
 
+/// <summary>A bone in a skeletal animation.</summary>
 public class Bone
 {
     public string Name { get; }
     public int Index;
     public Matrix4 LocalTransform = Matrix4.Identity;
-
-    public List<KeyframeData<Vector3>> PositionData { get; } = [];
-    public List<KeyframeData<OpenTK.Mathematics.Quaternion>> RotationData { get; } = [];
-    public List<KeyframeData<Vector3>> ScaleData { get; } = [];
+    public readonly List<KeyframeData<Vector3>> PositionData = [];
+    public readonly List<KeyframeData<OpenTK.Mathematics.Quaternion>> RotationData = [];
+    public readonly List<KeyframeData<Vector3>> ScaleData = [];
     public uint NumberOfPositionKeys;
     public uint NumberOfRotationKeys;
     public uint NumberOfScaleKeys;
@@ -39,7 +38,6 @@ public class Bone
     /// Gets the current position index of the bone to interpolate
     /// based on the current animation time.
     /// </summary>
-    /// <param name="animationTime"></param>
     /// <returns>
     /// The index of the current position keyframe to interpolate.
     /// </returns>
@@ -59,7 +57,6 @@ public class Bone
     /// Gets the current rotation index of the bone to interpolate
     /// based on the current animation time.
     /// </summary>
-    /// <param name="animationTime"></param>
     /// <returns>
     /// The index of the current rotation keyframe to interpolate.
     /// </returns>
@@ -79,7 +76,6 @@ public class Bone
     /// Gets the current scale index of the bone to interpolate
     /// based on the current animation time.
     /// </summary>
-    /// <param name="animationTime"></param>
     /// <returns>
     /// The index of the current scale keyframe to interpolate.
     /// </returns>
@@ -95,7 +91,7 @@ public class Bone
         return 0;
     }
 
-    /// <summary>Gets normalized value for lerp and slerp interpolation.</summary>
+    ///<summary>Gets normalized value for lerp and slerp interpolation.</summary>
     public static double GetScaleFactor(double lastFrame, double nextFrame, double animationTime)
     {
         double totalTime = nextFrame - lastFrame;
@@ -104,9 +100,7 @@ public class Bone
         return scaleFactor;
     }
 
-    /// <summary>
-    /// Figures out which position keyframes to interpolate and interpolates them.
-    /// </summary>
+    /// <summary>Figures out which position keyframes to interpolate and interpolates them.</summary>
     public Matrix4 InterpolatePosition(float animationTime)
     {
         if (PositionData.Count == 1)
@@ -120,9 +114,7 @@ public class Bone
         return Matrix4.CreateTranslation(finalPosition); // TODO: Transpose?
     }
 
-    /// <summary>
-    /// Figures out which rotation keyframes to interpolate and interpolates them.
-    /// </summary>
+    ///<summary>Figures out which rotation keyframes to interpolate and interpolates them.</summary>
     public Matrix4 InterpolateRotation(float animationTime)
     {
         if (RotationData.Count == 1)
@@ -137,9 +129,7 @@ public class Bone
         return Matrix4.CreateFromQuaternion(finalRotation); // TODO: Transpose?
     }
 
-    /// <summary>
-    /// Figures out which scale keyframes to interpolate and interpolates them.
-    /// </summary>
+    /// <summary>Figures out which scale keyframes to interpolate and interpolates them.</summary>
     public Matrix4 InterpolateScale(float animationTime)
     {
         if (ScaleData.Count == 1)
@@ -153,10 +143,7 @@ public class Bone
         return Matrix4.CreateScale(finalScale); // TODO: Transpose?
     }
 
-    /// <summary>
-    /// Gets the keyframes from the animation channel.
-    /// </summary>
-    /// <param name="channel"></param>
+    /// <summary>Gets the keyframes from the animation channel.</summary>
     private unsafe void GetKeys(in AiNodeAnim channel)
     {
         NumberOfPositionKeys = channel.NumPositionKeys;

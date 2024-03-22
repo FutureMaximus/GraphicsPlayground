@@ -1,16 +1,17 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using GraphicsPlayground.Graphics.Models.Mesh;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Models.Generic;
 
 /// <summary> Generic model part data also known as a bone with renderable meshes. </summary>
-public class GenericModelPart(string name, GenericModel coreModel) : IModelPart, IDisposable
+public class GenericModelPart(string name, IModel coreModel) : IModelPart, IDisposable
 {
     // ====== Part Data ======
     /// <summary> The core model that owns this part </summary>
-    public GenericModel CoreModel = coreModel;
+    public IModel CoreModel = coreModel;
     /// <summary> The parent of this part </summary>
-    public GenericModelPart? Parent;
+    public IModelPart? Parent { get; set; }
     /// <summary> The children of this part </summary>
     private readonly HashSet<GenericModelPart> _children = [];
     public void AddChild(GenericModelPart child)
@@ -35,6 +36,7 @@ public class GenericModelPart(string name, GenericModel coreModel) : IModelPart,
     public Transformation LocalTransformation = new();
     /// <summary> The transformation of the model part used for rendering. </summary>
     public Matrix4 Transformation => LocalTransformation * (Parent?.Transformation ?? Matrix4.Identity) * CoreModel.Transformation();
+
     /// <summary> Returns the normal matrix for this model part</summary>
     public Matrix3 NormalMatrix()
     {

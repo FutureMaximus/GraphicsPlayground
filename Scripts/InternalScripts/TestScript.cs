@@ -1,4 +1,5 @@
 ﻿using GraphicsPlayground.Graphics.Models.Generic;
+using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Graphics.Models.ShapeModels;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Shaders.Data;
@@ -42,7 +43,7 @@ public class TestScript : IScript
         };
         spherePart.Meshes.Add(sphereMesh);
         sphere.Parts.Add(spherePart);
-        engine.GenericModels.Add(sphere);
+        engine.Models.Add(sphere);
 
         WorldSettings settings = new()
         {

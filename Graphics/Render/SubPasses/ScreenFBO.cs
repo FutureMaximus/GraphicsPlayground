@@ -1,5 +1,4 @@
-﻿using GraphicsPlayground.Graphics.Shaders;
-using GraphicsPlayground.Graphics.Textures;
+﻿using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
