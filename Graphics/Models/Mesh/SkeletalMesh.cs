@@ -9,7 +9,7 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
 {
     public ModelPart ParentPart { get; set; } = modelPart;
     public string Name { get; set; } = name;
-    public int LOD { get; set; } = 0;
+    public LODInfo LOD { get; set; } = new LODInfo(0, 0);
     public Guid ID { get; set; } = Guid.NewGuid();
     public BufferUsageHint MeshUsageHint => BufferUsageHint.DynamicDraw;
 

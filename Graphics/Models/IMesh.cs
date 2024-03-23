@@ -20,7 +20,7 @@ public interface IMesh : IDisposable
     string Name { get; set; }
 
     ///<summary>The level of detail of the mesh.</summary>
-    int LOD { get; set; }
+    LODInfo LOD { get; set; }
 
     ///<summary>The unique identifier of the mesh this should be the same across several LODs of the same mesh.</summary>
     Guid ID { get; set; }

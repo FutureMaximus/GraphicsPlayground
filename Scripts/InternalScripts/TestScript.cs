@@ -31,7 +31,7 @@ public class TestScript : IScript
         Texture2D defaultAlbedo = TextureHelper.GenerateColorTexture(Color.White, 128, 128);
         Texture2D defaultNormal = TextureHelper.GenerateColorTexture(ColorHelper.DefaultNormalMapColor, 128, 128);
         Texture2D defaultARM = TextureHelper.GenerateColorTexture(Color.FromArgb(255, 100, 200), 128, 128);
-        GenericMesh sphereMesh = new Torus(spherePart, 10, 5, 50, 100)
+        GenericMesh sphereMesh = new Torus(spherePart, 10, 5, 100, 250)
         {
             ShaderData = new GenericMeshShaderData(
                 new PBRMaterialData()
@@ -72,8 +72,9 @@ public class TestScript : IScript
         World = world;
         Engine = engine;
         World = world;
-        World?.Start();
-        World?.Update();
+        //World?.Start();
+        //World?.Update();
+        LODGenerator.GenerateLODs(sphereMesh, 12, 15000, 200);
 
         engine.OnCustomImGuiLogic += CustomImGui;
     }

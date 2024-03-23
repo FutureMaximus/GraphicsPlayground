@@ -14,7 +14,7 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
     /// <summary> Model part that owns this mesh. </summary>
     public ModelPart ParentPart { get; set; } = modelPart;
     public string Name { get; set; } = name;
-    public int LOD { get; set; } = 0;
+    public LODInfo LOD { get; set; } = new LODInfo(0, 0);
     public Guid ID { get; set; } = Guid.NewGuid();
     public IShaderData ShaderData { get; set; } = new GenericMeshShaderData();
     public BufferUsageHint MeshUsageHint { get; set; } = BufferUsageHint.StaticDraw;
