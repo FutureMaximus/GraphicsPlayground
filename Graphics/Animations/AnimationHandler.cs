@@ -6,7 +6,7 @@ public static class AnimationHandler
 {
     public static readonly Dictionary<string, Animation> Animations = [];
 
-    public static void AddAnimation(Assimp.Animation animationToLoad, in Scene scene, Dictionary<string, BoneInfo> boneInfo, int boneInfoCount, out Animation loadedAnimation)
+    public static void AddAnimation(Assimp.Animation animationToLoad, in Scene scene, Dictionary<string, BoneInfo> boneInfo, int boneInfoCount)
     {
         if (Animations.ContainsKey(animationToLoad.Name))
         {
@@ -15,7 +15,6 @@ public static class AnimationHandler
 
         Animation animation = new(animationToLoad, scene, boneInfo, boneInfoCount);
         Animations.Add(animation.Name, animation);
-        loadedAnimation = animation;
     }
 
     public static void RemoveAnimation(string name)

@@ -366,6 +366,10 @@ public static class ModelLoader
                 Weights = weights
             };
             ExtractBonesForSkeletalMesh(mesh, ref skeletalMesh);
+            for (int i = 0; i < scene.Animations.Count; i++)
+            {
+                AnimationHandler.AddAnimation(scene.Animations[i], scene, skeletalMesh.BoneInfoMap, skeletalMesh.BoneCounter);
+            }
             return skeletalMesh;
         }
 

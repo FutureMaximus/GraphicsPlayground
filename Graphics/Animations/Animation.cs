@@ -1,5 +1,4 @@
 ﻿using Assimp;
-using Assimp.Unmanaged;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Animations;
@@ -12,11 +11,12 @@ public struct AnimationNodeInfo(Matrix4 transform, string name, int childrenCoun
     public List<AnimationNodeInfo> Children = [];
 }
 
+/// <summary> A skeletal animation that can be applied to a skeletal mesh. </summary>
 public class Animation
 {
     public string Name;
-    public double Duration = 0;
-    public double TicksPerSecond = 0;
+    public float Duration = 0;
+    public float TicksPerSecond = 0;
     public List<Bone> Bones = [];
     public Dictionary<string, BoneInfo> BoneInfoMap = [];
     public AnimationNodeInfo RootNode;
@@ -24,14 +24,15 @@ public class Animation
     public Animation(in Assimp.Animation animationToLoad, in Scene scene, Dictionary<string, BoneInfo> meshBoneInfo, int boneInfoCount)
     {
         Name = animationToLoad.Name;
-        Duration = animationToLoad.DurationInTicks;
-        TicksPerSecond = animationToLoad.TicksPerSecond;
+        Duration = (float)animationToLoad.DurationInTicks;
+        TicksPerSecond = (float)animationToLoad.TicksPerSecond;
         ReadMissingBones(animationToLoad, meshBoneInfo, boneInfoCount);
         AnimationNodeInfo root = new();
         ReadHierarchyData(ref root, scene.RootNode);
         RootNode = root;
     }
 
+    /// <summary>Reads the missing bones of the animation.</summary>
     public void ReadMissingBones(in Assimp.Animation animationToRead, Dictionary<string, BoneInfo> meshBoneInfo, int boneInfoCount)
     { 
         int size = animationToRead.NodeAnimationChannelCount;
@@ -49,6 +50,7 @@ public class Animation
         }
     }
 
+    /// <summary>Reads the hierarchy data of the animation.</summary>
     public static void ReadHierarchyData(ref AnimationNodeInfo destination, in Node source)
     {
         destination.Name = source.Name;
@@ -61,5 +63,18 @@ public class Animation
             ReadHierarchyData(ref childNode, child);
             destination.Children.Add(childNode);
         }
+    }
+
+    /// <summary>Gets the bone by name.</summary>
+    public Bone? GetBoneByName(in string name)
+    {
+        foreach (Bone bone in Bones)
+        {
+            if (bone.Name == name)
+            {
+                return bone;
+            }
+        }
+        return null;
     }
 }
