@@ -1,4 +1,5 @@
 ﻿using Assimp;
+using Assimp.Unmanaged;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Animations;
@@ -16,6 +17,7 @@ public class Animation
     public string Name;
     public double Duration = 0;
     public double TicksPerSecond = 0;
+    public List<Bone> Bones = [];
     public Dictionary<string, BoneInfo> BoneInfoMap = [];
     public AnimationNodeInfo RootNode;
 
@@ -31,12 +33,19 @@ public class Animation
     }
 
     public void ReadMissingBones(in Assimp.Animation animationToRead, Dictionary<string, BoneInfo> meshBoneInfo, int boneInfoCount)
-    {
+    { 
         int size = animationToRead.NodeAnimationChannelCount;
         for (int i = 0; i < size; i++)
         {
             NodeAnimationChannel channel = animationToRead.NodeAnimationChannels[i];
             string boneName = channel.NodeName;
+            if (!meshBoneInfo.ContainsKey(boneName))
+            {
+                BoneInfo boneInfo = meshBoneInfo[boneName];
+                boneInfo.ID = boneInfoCount;
+                boneInfoCount++;
+            }
+            Bones.Add(new Bone(boneName, meshBoneInfo[boneName].ID, channel));
         }
     }
 

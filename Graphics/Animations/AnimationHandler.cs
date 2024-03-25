@@ -1,17 +1,19 @@
-﻿namespace GraphicsPlayground.Graphics.Animations;
+﻿using Assimp;
+
+namespace GraphicsPlayground.Graphics.Animations;
 
 public static class AnimationHandler
 {
     public static readonly Dictionary<string, Animation> Animations = [];
 
-    public static void AddAnimation(Assimp.Animation animationToLoad, out Animation loadedAnimation)
+    public static void AddAnimation(Assimp.Animation animationToLoad, in Scene scene, Dictionary<string, BoneInfo> boneInfo, int boneInfoCount, out Animation loadedAnimation)
     {
         if (Animations.ContainsKey(animationToLoad.Name))
         {
             throw new ArgumentException($"Animation with name {animationToLoad.Name} already exists.");
         }
 
-        Animation animation = new(animationToLoad);
+        Animation animation = new(animationToLoad, scene, boneInfo, boneInfoCount);
         Animations.Add(animation.Name, animation);
         loadedAnimation = animation;
     }

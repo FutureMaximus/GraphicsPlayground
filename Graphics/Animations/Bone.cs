@@ -1,8 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using Assimp;
-using Assimp.Unmanaged;
 
 namespace GraphicsPlayground.Graphics.Animations;
 
@@ -15,11 +12,11 @@ public class Bone
     public readonly List<KeyframeData<Vector3>> PositionData = [];
     public readonly List<KeyframeData<OpenTK.Mathematics.Quaternion>> RotationData = [];
     public readonly List<KeyframeData<Vector3>> ScaleData = [];
-    public uint NumberOfPositionKeys;
-    public uint NumberOfRotationKeys;
-    public uint NumberOfScaleKeys;
+    public int NumberOfPositionKeys;
+    public int NumberOfRotationKeys;
+    public int NumberOfScaleKeys;
 
-    public Bone(string name, int id, in AiNodeAnim channel)
+    public Bone(string name, int id, in NodeAnimationChannel channel)
     {
         Name = name;
         Index = id;
@@ -144,39 +141,27 @@ public class Bone
     }
 
     /// <summary>Gets the keyframes from the animation channel.</summary>
-    private unsafe void GetKeys(in AiNodeAnim channel)
+    private unsafe void GetKeys(in NodeAnimationChannel channel)
     {
-        NumberOfPositionKeys = channel.NumPositionKeys;
-        nint PositionKeys = channel.PositionKeys;
-        NumberOfRotationKeys = channel.NumRotationKeys;
-        nint RotationKeys = channel.RotationKeys;
-        NumberOfScaleKeys = channel.NumScalingKeys;
-        nint ScalingKeys = channel.ScalingKeys;
+        NumberOfPositionKeys = channel.PositionKeyCount;
+        NumberOfRotationKeys = channel.RotationKeyCount;
+        NumberOfScaleKeys = channel.ScalingKeyCount;
 
-        for (uint i = 0; i < NumberOfPositionKeys; i++)
+        for (int i = 0; i < NumberOfPositionKeys; i++)
         {
-            VectorKey key = MemoryMarshal.Read<VectorKey>(
-                new ReadOnlySpan<byte>(PositionKeys.ToPointer(), 
-                (int)NumberOfPositionKeys * Unsafe.SizeOf<VectorKey>()).Slice((int)i * Unsafe.SizeOf<VectorKey>(), 
-                Unsafe.SizeOf<VectorKey>()));
+            VectorKey key = channel.PositionKeys[i];
             PositionData.Add(new KeyframeData<Vector3>(key.Time, new Vector3(key.Value.X, key.Value.Y, key.Value.Z)));
         }
-        for (uint i = 0; i < NumberOfRotationKeys; i++)
+        for (int i = 0; i < NumberOfRotationKeys; i++)
         {
-            QuaternionKey key = MemoryMarshal.Read<QuaternionKey>(
-                new ReadOnlySpan<byte>(RotationKeys.ToPointer(),
-                (int)NumberOfRotationKeys * Unsafe.SizeOf<QuaternionKey>()).Slice((int)i * Unsafe.SizeOf<QuaternionKey>(),
-                Unsafe.SizeOf<QuaternionKey>()));
+            QuaternionKey key = channel.RotationKeys[i];
             RotationData.Add(new KeyframeData<OpenTK.Mathematics.Quaternion>(
                 key.Time, 
                 new OpenTK.Mathematics.Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W)));
         }
-        for (uint i = 0; i < NumberOfRotationKeys; i++)
+        for (int i = 0; i < NumberOfRotationKeys; i++)
         {
-            VectorKey key = MemoryMarshal.Read<VectorKey>(
-                new ReadOnlySpan<byte>(ScalingKeys.ToPointer(),
-                (int)NumberOfRotationKeys * Unsafe.SizeOf<VectorKey>()).Slice((int)i * Unsafe.SizeOf<VectorKey>(),
-                Unsafe.SizeOf<VectorKey>()));
+            VectorKey key = channel.ScalingKeys[i];
             ScaleData.Add(new KeyframeData<Vector3>(key.Time, new Vector3(key.Value.X, key.Value.Y, key.Value.Z)));
         }
     }
