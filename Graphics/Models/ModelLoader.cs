@@ -4,6 +4,7 @@ using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using GraphicsPlayground.Graphics.Models.Mesh;
+using GraphicsPlayground.Graphics.Animations;
 
 namespace GraphicsPlayground.Graphics.Models;
 
@@ -178,15 +179,13 @@ public static class ModelLoader
         }
     }
 
-    private static void ExtractBonesForSkeletalMesh(Assimp.Mesh mesh, ref Model? model, ref SkeletalMesh skeletalMesh)
+    private static void ExtractBonesForSkeletalMesh(Assimp.Mesh assimpMesh, ref SkeletalMesh skeletalMesh)
     {
-        if (model is null) return;
-        for (int boneIndex = 0; boneIndex < mesh.BoneCount; boneIndex++)
+        for (int boneIndex = 0; boneIndex < assimpMesh.BoneCount; boneIndex++)
         {
-            int boneID = -1;
-            string boneName = mesh.Bones[boneIndex].Name;
-
-            /*if (!model.Bones.TryGetValue(boneName, out BoneInfo outBoneVal))
+            int boneID;
+            string boneName = assimpMesh.Bones[boneIndex].Name;
+            if (!skeletalMesh.BoneInfoMap.TryGetValue(boneName, out BoneInfo boneInfo))
             {
                 Matrix4x4 offsetMat = assimpMesh.Bones[boneIndex].OffsetMatrix;
                 // TODO: Is this properly implemented?
@@ -194,19 +193,19 @@ public static class ModelLoader
                     offsetMat.B1, offsetMat.B2, offsetMat.B3, offsetMat.B4,
                     offsetMat.C1, offsetMat.C2, offsetMat.C3, offsetMat.C4,
                     offsetMat.D1, offsetMat.D2, offsetMat.D3, offsetMat.D4);
-                BoneInfo newBoneInfo = new(model.BoneCounter, offset);
-                model.Bones.Add(boneName, newBoneInfo);
-                boneID = model.BoneCounter;
-                model.BoneCounter++;
+                BoneInfo newBoneInfo = new(skeletalMesh.BoneCounter, offset);
+                skeletalMesh.BoneInfoMap.Add(boneName, newBoneInfo);
+                boneID = skeletalMesh.BoneCounter;
+                skeletalMesh.BoneCounter++;
             }
             else
             {
-                boneID = outBoneVal.ID;
+                boneID = boneInfo.ID;
             }
 
             if (boneID == -1)
             {
-                throw new AssimpException($"Bone ID is -1 for bone {boneName} in model {model.Name}");
+                throw new AssimpException($"Bone ID is -1 for bone {boneName} in skeletal mesh {skeletalMesh.Name}");
             }
 
             List<VertexWeight> weights = assimpMesh.Bones[boneIndex].VertexWeights;
@@ -217,19 +216,23 @@ public static class ModelLoader
                 int vertexID = weights[i].VertexID;
                 float weight = weights[i].Weight;
 
-                if (vertexID >= genericMesh.Vertices.Count)
+                if (vertexID >= skeletalMesh.Vertices.Count)
                 {
-                    throw new AssimpException($"Vertex ID {vertexID} is greater than the vertex count of {genericMesh.Vertices.Count} in model {model.Name}");
+                    throw new AssimpException($"Vertex ID {vertexID} is greater than the vertex count of " +
+                        $"{skeletalMesh.Vertices.Count} in skeletal mesh {skeletalMesh.Name}");
                 }
                 if (i >= GraphicsUtil.MaxBoneInfluence)
                 {
                     throw new AssimpException($"Bone influence count is greater than the " +
-                        $"maximum bone influence count of {GraphicsUtil.MaxBoneInfluence} in model {model.Name}");
+                        $"maximum bone influence count of {GraphicsUtil.MaxBoneInfluence} in skeletal mesh {skeletalMesh.Name}");
                 }
 
-                genericMesh.BoneIDs.Add(boneID);
-                genericMesh.Weights.Add(weight);
-            }*/
+                for (int j = 0; j < GraphicsUtil.MaxBoneInfluence; j++)
+                {
+                    skeletalMesh.BoneIDs[vertexID * GraphicsUtil.MaxBoneInfluence + j] = boneID;
+                    skeletalMesh.Weights[vertexID * GraphicsUtil.MaxBoneInfluence + j] = weight;
+                }
+            }
         }
     }
 
@@ -339,6 +342,18 @@ public static class ModelLoader
 
         if (meshType == typeof(SkeletalMesh))
         {
+            List<int> boneIDs = [];
+            List<float> weights = [];
+
+            for (int i = 0; i < positions.Count; i++)
+            {
+                for (int j = 0; j < GraphicsUtil.MaxBoneInfluence; j++)
+                {
+                    boneIDs.Add(-1);
+                    weights.Add(0.0f);
+                }
+            }
+
             SkeletalMesh skeletalMesh = new(mesh.Name, modelPart)
             {
                 ShaderData = meshShaderData,
@@ -346,9 +361,11 @@ public static class ModelLoader
                 TextureCoords = textureCoords,
                 Normals = normals,
                 Tangents = tangents,
-                Indices = indices
+                Indices = indices,
+                BoneIDs = boneIDs,
+                Weights = weights
             };
-            ExtractBonesForSkeletalMesh(mesh, ref modelEntry.CoreModel, ref skeletalMesh);
+            ExtractBonesForSkeletalMesh(mesh, ref skeletalMesh);
             return skeletalMesh;
         }
 

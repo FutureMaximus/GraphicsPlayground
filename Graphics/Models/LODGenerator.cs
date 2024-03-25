@@ -7,7 +7,7 @@ namespace GraphicsPlayground.Graphics.Models;
 public struct LODGenTriangle
 {
     public readonly int[] Vertices;
-    public readonly double[] Error;
+    public double[] Error;
     public bool Deleted;
     public bool Dirty;
     public int Attribute;
@@ -85,13 +85,13 @@ public static class LODGenerator
             throw new ArgumentException("LOD vertex factor must be between 0.0 and 1.0.");
         }
         IMesh[] lodMeshes = new IMesh[levels];
-        for (uint i = 1; i <= levels; i++)
+        /*for (uint i = 1; i <= levels; i++)
         {
             double distance = InternalMethods.GetLODDistance(minRenderDistance, maxRenderDistance, i, levels);
             uint targetCount = InternalMethods.GetLODTargetCount(meshVertCount, lodVertFactor, i);
             lodMeshes[i - 1] = GenerateLOD(refMesh, targetCount, aggressiveness);
             lodMeshes[i - 1].LOD = new LODInfo(i, (float)distance);
-        }
+        }*/
         return lodMeshes;
     }
 
@@ -127,8 +127,16 @@ public static class LODGenerator
             }
             if (i % 5 == 0)
             {
-                InternalMethods.UpdateMesh(i, triangles);
+                InternalMethods.UpdateMesh(i, triangles, vertices, refs);
             }
+            for (int t = 0; t < triangles.Count; t++)
+            {
+                LODGenTriangle triangle = triangles[i];
+                triangle.Dirty = false;
+                triangles[t] = triangle;
+            }
+            double threshold = 0.000000001 * Math.Pow(i + 3, aggressiveness);
+
         }
     }
 
@@ -147,11 +155,11 @@ public static class LODGenerator
         ///<summary>Gets the decreased amount of triangles for a LOD mesh.</summary>
         public static uint GetLODTargetCount(int vertexCount, double factor, uint level)
         {
-            return (uint)(vertexCount * (float)Math.Pow(factor, level) / 3);
+            return (uint)(vertexCount * Math.Pow(factor, level) / 3);
         }
 
         ///<summary>Updates the LOD meshes triangles.</summary>
-        public static void UpdateMesh(int iteration, List<LODGenTriangle> trianglesToUpdate)
+        public static void UpdateMesh(int iteration, List<LODGenTriangle> trianglesToUpdate, List<LODGenVertex> verticesToUpdate, List<LODGenRef> refs)
         {
             if (iteration > 0)
             {
@@ -169,6 +177,18 @@ public static class LODGenerator
                     }
                 }
                 trianglesToUpdate.Capacity = dst;
+            }
+        }
+
+        ///<summary>Updates the references for the LOD generator.</summary>
+        public static void UpdateRefs(List<LODGenTriangle> triangles, List<LODGenVertex> vertices, List<LODGenRef> refs)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                LODGenVertex vertex = vertices[i];
+                vertex.TStart = 0;
+                vertex.TCount = 0;
+                vertices[i] = vertex;
             }
         }
     }

@@ -1,18 +1,32 @@
-﻿using GraphicsPlayground.Graphics.Shaders.Data;
+﻿using GraphicsPlayground.Graphics.Animations;
+using GraphicsPlayground.Graphics.Models.Generic;
+using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Util;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using System.Runtime.CompilerServices;
+using GraphicsPlayground.Graphics.Shader.Data;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
 
+/// <summary> A skeletal mesh that contains a hierarchy of bones that can be animated. </summary>
 public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
 {
+    /// <summary> Model part that owns this mesh. </summary>
     public ModelPart ParentPart { get; set; } = modelPart;
+    /// <summary> Name of the mesh. </summary>
     public string Name { get; set; } = name;
+    /// <summary>The skeletal bones of the mesh.</summary>
+    public Dictionary<string, BoneInfo> BoneInfoMap { get; set; } = [];
+    /// <summary> The amount of bones in the mesh. </summary>
+    public int BoneCounter = 0;
+    /// <summary> Level of detail information. </summary>
     public LODInfo LOD { get; set; } = new LODInfo(0, 0);
+    /// <summary> Unique identifier of the mesh. </summary>
     public Guid ID { get; set; } = Guid.NewGuid();
+    /// <summary> Usage hint for the mesh. </summary>
     public BufferUsageHint MeshUsageHint => BufferUsageHint.DynamicDraw;
-
+    /// <summary> Shader data for rendering the mesh. </summary>
     public IShaderData ShaderData { get; set; } = new GenericMeshShaderData(); // TODO: SkeletalMeshShaderData?
 
     // ====== Mesh Data ======
@@ -73,9 +87,19 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
             }
         }
 
+        List<SkeletalVertexData> data = GeometryHelper.GetSkeletalVertexDatas(Vertices, Normals, TextureCoords, BoneIDs, Weights);
+
         VertexArrayObject = GL.GenVertexArray();
         GL.BindVertexArray(VertexArrayObject);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.VertexArray, VertexArrayObject, $"{Name} VAO");
+
+        VertexBufferObject = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, VertexBufferObject, $"{Name} VBO");
+        GL.BufferData(BufferTarget.ArrayBuffer, data.Count * Unsafe.SizeOf<SkeletalVertexData>(), data.ToArray(), MeshUsageHint);
+        GraphicsUtil.CheckError($"{Name} VBO Load");
+
+
     }
 
     public void Render()

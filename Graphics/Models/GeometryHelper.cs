@@ -1,5 +1,7 @@
 ﻿using OpenTK.Mathematics;
 using GraphicsPlayground.Graphics.Models.Generic;
+using GraphicsPlayground.Graphics.Shader.Data;
+using GraphicsPlayground.Graphics.Shaders.Data;
 
 namespace GraphicsPlayground.Graphics.Models;
 
@@ -11,7 +13,7 @@ public static class GeometryHelper
     /// </summary>
     public static List<Vector3>? CalculateTangents(List<Vector3> positions, List<Vector2> textureCoordinates, List<Vector3> normals, List<uint> indices)
     {
-        List<Vector3> tangents = new();
+        List<Vector3> tangents = [];
 
         if (positions.Count != normals.Count || positions.Count != textureCoordinates.Count || positions.Count % 3 != 0)
             return null;
@@ -78,21 +80,27 @@ public static class GeometryHelper
     /// </summary>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static List<GenericVertexData> GetVertexDatasWithBones(
+    public static List<SkeletalVertexData> GetSkeletalVertexDatas(
         List<Vector3> positions, List<Vector3> normals, List<Vector2> textureCoordinates, List<int> boneIds, List<float> weights)
     {
         if (positions.Count != normals.Count || positions.Count != textureCoordinates.Count)
             throw new ArgumentException("Position, normal, and texture coordinate lists must have the same length.");
 
-        List<GenericVertexData> vertexData = [];
+        List<SkeletalVertexData> vertexData = [];
 
         for (int i = 0; i < positions.Count; i++)
         {
             Vector3 position = positions[i];
             Vector3 normal = normals[i];
             Vector2 textureCoordinate = textureCoordinates[i];
+            BoneWeight boneWeight1 = new(boneIds[i], weights[i]);
+            BoneWeight boneWeight2 = new(boneIds[i + 1], weights[i + 1]);
+            BoneWeight boneWeight3 = new(boneIds[i + 2], weights[i + 2]);
+            BoneWeight boneWeight4 = new(boneIds[i + 3], weights[i + 3]);
 
-            vertexData.Add(new GenericVertexData(position, normal, textureCoordinate));
+            SkeletalVertexData data = new(position, normal, textureCoordinate, boneWeight1, boneWeight2, boneWeight3, boneWeight4);
+
+            vertexData.Add(data);
         }
 
         return vertexData;
@@ -112,7 +120,7 @@ public static class GeometryHelper
         if (positions.Count != normals.Count || positions.Count != textureCoordinates.Count)
             throw new ArgumentException("Position, normal, and texture coordinate lists must have the same length.");
 
-        List<GenericVertexData> vertexData = new();
+        List<GenericVertexData> vertexData = [];
 
         for (int i = 0; i < positions.Count; i++)
         {
@@ -132,7 +140,7 @@ public static class GeometryHelper
         if (vectors.Length % 3 != 0)
             throw new ArgumentException("Float array must have a length that is a multiple of 3.");
 
-        List<Vector3> vectorList = new();
+        List<Vector3> vectorList = [];
 
         for (int i = 0; i < vectors.Length; i += 3)
         {
@@ -148,7 +156,7 @@ public static class GeometryHelper
         if (vectors.Length % 2 != 0)
             throw new ArgumentException("Float array must have a length that is a multiple of 2.");
 
-        List<Vector2> vectorList = new();
+        List<Vector2> vectorList = [];
 
         for (int i = 0; i < vectors.Length; i += 2)
         {
@@ -161,27 +169,27 @@ public static class GeometryHelper
     /// <summary> Creates a floating point array from a list of Vector3 </summary>
     public static float[] ArrayFromVector3List(List<Vector3> vecList)
     {
-        List<float> floatList = new();
+        List<float> floatList = [];
 
         foreach (Vector3 vec in vecList)
         {
             floatList.AddRange(new float[] { vec.X, vec.Y, vec.Z });
         }
 
-        return floatList.ToArray();
+        return [.. floatList];
     }
 
     /// <summary> Creates a floating point array from a list of Vector2 </summary>
     public static float[] ArrayFromVector2List(List<Vector2> vecList)
     {
-        List<float> floatList = new();
+        List<float> floatList = [];
 
         foreach (Vector2 vec in vecList)
         {
             floatList.AddRange(new float[] { vec.X, vec.Y });
         }
 
-        return floatList.ToArray();
+        return [.. floatList];
     }
 
     /// <summary> 
@@ -193,7 +201,7 @@ public static class GeometryHelper
         if (positions.Count != normals.Count || positions.Count != textureCoordinates.Count)
             throw new ArgumentException("Position, normal, and texture coordinate lists must have the same length.");
 
-        List<float> interleavedData = new();
+        List<float> interleavedData = [];
 
         for (int i = 0; i < positions.Count; i++)
         {
@@ -204,7 +212,7 @@ public static class GeometryHelper
             interleavedData.AddRange(new float[] { position.X, position.Y, position.Z, normal.X, normal.Y, normal.Z, textureCoordinate.X, textureCoordinate.Y });
         }
 
-        return interleavedData.ToArray();
+        return [.. interleavedData];
     }
 
     /// <summary> 
@@ -216,7 +224,7 @@ public static class GeometryHelper
         if (positions.Count != normals.Count || positions.Count != textureCoordinates.Count)
             throw new ArgumentException("Position, normal, and texture coordinate lists must have the same length.");
 
-        List<float> interleavedData = new();
+        List<float> interleavedData = [];
 
         for (int i = 0; i < positions.Count; i++)
         {
@@ -227,7 +235,7 @@ public static class GeometryHelper
             interleavedData.AddRange(new float[] { position.X, position.Y, position.Z, normal.X, normal.Y, normal.Z, textureCoordinate.X, textureCoordinate.Y });
         }
 
-        return interleavedData.ToArray();
+        return [.. interleavedData];
     }
 
     /// <summary> 
@@ -239,7 +247,7 @@ public static class GeometryHelper
         if (positions.Count != textureCoordinates.Count)
             throw new ArgumentException("Position and texture coordinate lists must have the same length.");
 
-        List<float> interleavedData = new();
+        List<float> interleavedData = [];
 
         for (int i = 0; i < positions.Count; i++)
         {
@@ -249,7 +257,7 @@ public static class GeometryHelper
             interleavedData.AddRange(new float[] { position.X, position.Y, position.Z, textureCoordinate.X, textureCoordinate.Y });
         }
 
-        return interleavedData.ToArray();
+        return [.. interleavedData];
     }
 
     /// <summary> 
@@ -261,7 +269,7 @@ public static class GeometryHelper
         if (positions.Count != normals.Count)
             throw new ArgumentException("Position and normal lists must have the same length.");
 
-        List<float> interleavedData = new();
+        List<float> interleavedData = [];
 
         for (int i = 0; i < positions.Count; i++)
         {
@@ -271,6 +279,6 @@ public static class GeometryHelper
             interleavedData.AddRange(new float[] { position.X, position.Y, position.Z, normal.X, normal.Y, normal.Z });
         }
 
-        return interleavedData.ToArray();
+        return [.. interleavedData];
     }
 }

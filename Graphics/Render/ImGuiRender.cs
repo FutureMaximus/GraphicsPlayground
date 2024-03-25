@@ -443,7 +443,7 @@ void main()
                     CheckGLError("Texture");
 
                     // We do _windowHeight - (int)clip.W instead of (int)clip.Y because gl has flipped Y when it comes to these coordinates
-                    var clip = pcmd.ClipRect;
+                    System.Numerics.Vector4 clip = pcmd.ClipRect;
                     GL.Scissor((int)clip.X, _windowHeight - (int)clip.W, (int)(clip.Z - clip.X), (int)(clip.W - clip.Y));
                     CheckGLError("Scissor");
 

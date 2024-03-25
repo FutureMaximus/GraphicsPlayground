@@ -15,7 +15,7 @@ namespace GraphicsPlayground.Scripts.InternalScripts;
 public class TestScript : IScript
 {
     public VoxelWorld? World;
-    public Engine Engine;
+    public Engine? Engine;
 
     void IScript.OnLoad(Engine engine)
     {
