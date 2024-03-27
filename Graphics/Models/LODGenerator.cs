@@ -96,7 +96,7 @@ public static class LODGenerator
     }
 
     ///<summary>Generates a level of detail mesh.</summary>
-    public static IMesh GenerateLOD(in IMesh refMesh, uint targetCount, double aggressiveness)
+    /*public static IMesh GenerateLOD(in IMesh refMesh, uint targetCount, double aggressiveness)
     {
         List<LODGenTriangle> triangles = new(refMesh.Indices.Count / 3);
         List<LODGenVertex> vertices = new(refMesh.Vertices.Count);
@@ -138,7 +138,7 @@ public static class LODGenerator
             double threshold = 0.000000001 * Math.Pow(i + 3, aggressiveness);
 
         }
-    }
+    }*/
 
     #region Internal Methods
     public class InternalMethods

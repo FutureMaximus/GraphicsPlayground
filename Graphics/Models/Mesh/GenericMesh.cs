@@ -5,10 +5,11 @@ using System.Runtime.InteropServices;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using System.Runtime.CompilerServices;
 using GraphicsPlayground.Graphics.Models.Generic;
+using GraphicsPlayground.Graphics.Materials;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
 
-/// <summary>Generic mesh data.</summary>
 public class GenericMesh(string name, ModelPart modelPart) : IMesh
 {
     /// <summary> Model part that owns this mesh. </summary>
@@ -18,6 +19,7 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
     public Guid ID { get; set; } = Guid.NewGuid();
     public IShaderData ShaderData { get; set; } = new GenericMeshShaderData();
     public BufferUsageHint MeshUsageHint { get; set; } = BufferUsageHint.StaticDraw;
+    public Material? Material { get; set; }
 
     // ====== Mesh Data ======
     public List<Vector3> Vertices { get; set; } = [];
@@ -30,7 +32,7 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
     public int NormalsLength = 0;
     public List<Vector3>? Tangents;
     public int TangentsLength = 0;
-    public bool HasTangents = false;
+    public bool HasTangents { get; set; } = false;
     // =======================
 
     // ====== OpenGL Data =====
@@ -41,7 +43,9 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
     public int VertexArrayObject;
     // ========================
 
-    public bool IsLoaded = false;
+    public bool IsLoaded { get; set; } = false;
+
+    public Guid MeshID => throw new NotImplementedException();
 
     public void Load()
     {
@@ -175,27 +179,17 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
         GC.SuppressFinalize(this);
     }
 
-    public override bool Equals(object? obj)
+    public bool Equals(IMesh? x, IMesh? y)
     {
-        if (obj is GenericMesh mesh)
+        if (x is null || y is null)
         {
-            return mesh.ID == ID;
+            return false;
         }
-        return false;
+        return x.ID == y.ID;
     }
 
-    public override int GetHashCode()
+    public int GetHashCode([DisallowNull] IMesh obj)
     {
         return HashCode.Combine(ID);
-    }
-
-    public static bool operator ==(GenericMesh left, GenericMesh right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(GenericMesh left, GenericMesh right)
-    {
-        return !(left == right);
     }
 }

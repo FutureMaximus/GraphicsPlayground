@@ -138,6 +138,21 @@ public class Engine
         {
             throw new Exception("Window is null.");
         }
+        foreach (Model model in Models)
+        {
+            foreach (ModelPart modelPart in model.Parts)
+            {
+                foreach (IMesh mesh in modelPart.Meshes)
+                {
+                    if (mesh.Material is not null)
+                    {
+                        mesh.Material.Build(this);
+                        mesh.Material.HasBeenBuilt = true;
+                    }
+                    mesh.Load();
+                }
+            }
+        }
         Window.Resize += Window_Resize;
         GraphicsUtil.LoadDebugger();
         ScriptLoader.LoadAllScripts(this);
@@ -270,7 +285,7 @@ public class Engine
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         GL.Enable(EnableCap.DepthTest);
         //GL.Enable(EnableCap.CullFace);
-        GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+        //GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 
         foreach (IRenderPass renderPass in RenderPasses)
         {
@@ -280,7 +295,7 @@ public class Engine
             }
         }
 
-        GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+        //GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         GL.Disable(EnableCap.DepthTest);
         GL.Clear(ClearBufferMask.ColorBufferBit);

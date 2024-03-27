@@ -15,7 +15,17 @@ public sealed class ShaderProgram : IShader
     public string Name { get; }
     public int ProgramHandle { get; }
 
-    public ShaderProgram(ShaderHandler handler, string name, string sourceName)
+    /// <summary>
+    /// Creates a new shader program with the given name and source name.
+    /// </summary>
+    /// <param name="handler">The global list of known shaders.</param>
+    /// <param name="name">The name of the shader.</param>
+    /// <param name="sourceName">The source name of the shader this is the file name to look for.</param>
+    /// <param name="directives">Precursor directives to add to the shader.</param>
+    /// <exception cref="NullReferenceException"></exception>
+    /// <exception cref="FileNotFoundException"></exception>
+    /// <exception cref="FileLoadException"></exception>
+    public ShaderProgram(ShaderHandler handler, string name, string sourceName, string directives = "")
     {
         if (handler.ShaderPath is null)
         {
@@ -31,7 +41,7 @@ public sealed class ShaderProgram : IShader
         int vertexShader;
         try
         {
-            vertexSource = File.ReadAllText(GetShaderFile(sourceName, "vert", handler));
+            vertexSource = ProcessShaderSource(File.ReadAllText(GetShaderFile(sourceName, "vert", handler)), directives);
             vertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(vertexShader, vertexSource);
             CompileShader(vertexShader, name);
@@ -46,7 +56,7 @@ public sealed class ShaderProgram : IShader
         int tessControlShader = -1;
         try
         {
-            tessControlSource = File.ReadAllText(GetShaderFile(sourceName, "tesc", handler));
+            tessControlSource = ProcessShaderSource(File.ReadAllText(GetShaderFile(sourceName, "tesc", handler)), directives);
             tessControlShader = GL.CreateShader(ShaderType.TessControlShader);
             GL.ShaderSource(tessControlShader, tessControlSource);
             CompileShader(tessControlShader, name);
@@ -58,7 +68,7 @@ public sealed class ShaderProgram : IShader
         int tessEvalShader = -1;
         try
         {
-            tessEvalSource = File.ReadAllText(GetShaderFile(sourceName, "tese", handler));
+            tessEvalSource = ProcessShaderSource(File.ReadAllText(GetShaderFile(sourceName, "tese", handler)), directives);
             tessEvalShader = GL.CreateShader(ShaderType.TessEvaluationShader);
             GL.ShaderSource(tessEvalShader, tessEvalSource);
             CompileShader(tessEvalShader, name);
@@ -70,7 +80,7 @@ public sealed class ShaderProgram : IShader
         int geometryShader = -1;
         try
         {
-            geometrySource = File.ReadAllText(GetShaderFile(sourceName, "geom", handler));
+            geometrySource = ProcessShaderSource(File.ReadAllText(GetShaderFile(sourceName, "geom", handler)), directives);
             geometryShader = GL.CreateShader(ShaderType.GeometryShader);
             GL.ShaderSource(geometryShader, geometrySource);
             CompileShader(geometryShader, name);
@@ -82,7 +92,7 @@ public sealed class ShaderProgram : IShader
         int fragmentShader;
         try
         {
-            fragmentSource = File.ReadAllText(GetShaderFile(sourceName, "frag", handler));
+            fragmentSource = ProcessShaderSource(File.ReadAllText(GetShaderFile(sourceName, "frag", handler)), directives);
             fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
             GL.ShaderSource(fragmentShader, fragmentSource);
             CompileShader(fragmentShader, name);
@@ -147,7 +157,7 @@ public sealed class ShaderProgram : IShader
         string infoLog = GL.GetShaderInfoLog(ProgramHandle);
         if (infoLog != string.Empty)
         {
-            throw new Exception($"Error compiling shader with name {name}: {infoLog}");
+            throw new FileLoadException($"Error compiling shader with name {name}: {infoLog}");
         }
 
         DebugLogger.Log($"<aqua>Successfully compiled shader <white>{name}.");
@@ -202,6 +212,16 @@ public sealed class ShaderProgram : IShader
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Program, program, $"ShaderProgram Program: {shaderName}");
     }
 
+    private static string ProcessShaderSource(string source, string directives)
+    {
+        int versionIndex = source.IndexOf("#version");
+        if (versionIndex == -1)
+        {
+            throw new Exception("ShaderProgram source does not contain #version directive.");
+        }
+        return source.Insert(versionIndex + 20, directives);
+    }
+
     public void Use()
     {
         GL.UseProgram(ProgramHandle);
@@ -210,7 +230,8 @@ public sealed class ShaderProgram : IShader
 
     public int GetAttribLocation(string attribName) => GL.GetAttribLocation(ProgramHandle, attribName);
 
-    private readonly Dictionary<string, int> _uniformCache = new();
+    private readonly Dictionary<string, int> _uniformCache = [];
+    /// <summary>Gets the uniform location for the shader program.</summary>
     public int GetUniformLocation(string uniformName)
     {
         if (_uniformCache.TryGetValue(uniformName, out int location))
@@ -221,6 +242,27 @@ public sealed class ShaderProgram : IShader
         location = GL.GetUniformLocation(ProgramHandle, uniformName);
         _uniformCache.Add(uniformName, location);
         return location;
+    }
+
+    /// <summary>Gets all uniform locations for the shader program.</summary>
+    public List<ShaderUniform> GetAllUniformLocations()
+    {
+        List<ShaderUniform> uniforms = [];
+        GL.GetProgram(ProgramHandle, GetProgramParameterName.ActiveUniforms, out int uniformCount);
+        for (int i = 0; i < uniformCount; i++)
+        {
+            string name = GL.GetActiveUniform(ProgramHandle, i, out int size, out ActiveUniformType type);
+            int location = GL.GetUniformLocation(ProgramHandle, name);
+            ShaderUniform uniform = new()
+            {
+                Name = name,
+                Location = location,
+                Type = type,
+                Size = size
+            };
+            uniforms.Add(uniform);
+        }
+        return uniforms;
     }
 
     public void SetInt(string name, ref int data) => GL.Uniform1(GetUniformLocation(name), data);

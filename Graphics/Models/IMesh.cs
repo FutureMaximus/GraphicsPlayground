@@ -1,11 +1,12 @@
-﻿using GraphicsPlayground.Graphics.Shaders.Data;
+﻿using GraphicsPlayground.Graphics.Materials;
+using GraphicsPlayground.Graphics.Shaders.Data;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Models;
 
 ///<summary>Represents a renderable mesh.</summary>
-public interface IMesh : IDisposable
+public interface IMesh : IDisposable, IEqualityComparer<IMesh>
 {
     ///<summary>The model part that owns this mesh.</summary>
     ModelPart ParentPart { get; set; }
@@ -31,9 +32,18 @@ public interface IMesh : IDisposable
     ///<summary>Loads the mesh data into OpenGL.</summary>
     void Load();
 
+    ///<summary>Returns if the mesh is loaded.</summary>
+    bool IsLoaded { get; set; }
+
+    ///<summary>Returns if the mesh has tangents.</summary> //TODO: We should just accurately calculate tangents.
+    bool HasTangents { get; set; }
+
     ///<summary>Renders the mesh.</summary>
     void Render();
 
-    ///<summary>ShaderProgram data for this mesh.</summary>
+    ///<summary>Shader data for this mesh.</summary>
     IShaderData ShaderData { get; set; }
+
+    ///<summary>Material to render for this mesh.</summary>
+    Material? Material { get; set; }
 }

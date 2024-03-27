@@ -16,7 +16,7 @@ public class Animator
         DeltaTime = 0;
         CurrentAnimation = animation;
         FinalBoneMatrices = new Matrix4[100];
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 100; i++) // TODO: Implement bone count uniform instead?
         {
             FinalBoneMatrices[i] = Matrix4.Identity;
         }

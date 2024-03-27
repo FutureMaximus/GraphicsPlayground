@@ -1,14 +1,10 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using GraphicsPlayground.Graphics.Lighting;
 using GraphicsPlayground.Graphics.Lighting.Lights;
 using GraphicsPlayground.Graphics.Models;
-using GraphicsPlayground.Graphics.Shaders.Data;
-using GraphicsPlayground.Graphics.Textures;
-using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Terrain.Meshing;
-using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Graphics.Shaders;
+using GraphicsPlayground.Graphics.Materials;
 
 namespace GraphicsPlayground.Graphics.Render;
 
@@ -21,10 +17,11 @@ public class ForwardRendering : IRenderPass
     public ShadowInternalSettings ShadowSettings;
 
     #region Shaders
-
-    private ShaderProgram? _pbrShader;
     private ShaderProgram? _terrainShader;
+    private int _lastShaderHandle = -1;
     #endregion
+
+    private int _previousShader = -1;
 
     public ForwardRendering(Engine engine)
     {
@@ -73,7 +70,6 @@ public class ForwardRendering : IRenderPass
     public void Load()
     {
         if (Engine.ShaderHandler is null) return;
-        _pbrShader = new(Engine.ShaderHandler, "PBR", "pbr");
         _terrainShader = new(Engine.ShaderHandler, "Terrain", "terrain");
     }
     #endregion
@@ -81,74 +77,51 @@ public class ForwardRendering : IRenderPass
     #region Render
     public void Render()
     {
-        // ============ PBR pass =============
-        if (_pbrShader is null)
-        {
-            throw new NullReferenceException("PBR shader is not set.");
-        }
         if (Engine.DirectionalLight is null)
         {
             throw new NullReferenceException("Directional light is not set.");
         }
-        _pbrShader.Use();
-        _pbrShader.SetVector3($"dirLight.direction", ref Engine.DirectionalLight.Position);
-        _pbrShader.SetVector3($"dirLight.color", ref Engine.DirectionalLight.LightData.Color);
-        _pbrShader.SetFloat($"dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
-        int pntLightI = 0;
-        for (int i = 0; i < Engine.EngineSettings.MaximumLights; i++)
-        {
-            Light light = Engine.Lights[i];
-            if (light is PointLight pbrPointLight)
-            {
-                _pbrShader.SetVector3($"pointLights[{pntLightI}].position", ref pbrPointLight.Position);
-                _pbrShader.SetVector3($"pointLights[{pntLightI}].color", ref pbrPointLight.LightData.Color);
-                _pbrShader.SetFloat($"pointLights[{pntLightI}].intensity", ref pbrPointLight.LightData.Intensity);
-                _pbrShader.SetFloat($"pointLights[{pntLightI}].constant", ref pbrPointLight.LightData.Constant);
-                _pbrShader.SetFloat($"pointLights[{pntLightI}].linear", ref pbrPointLight.LightData.Linear);
-                _pbrShader.SetFloat($"pointLights[{pntLightI}].quadratic", ref pbrPointLight.LightData.Quadratic);
-                pntLightI++;
-            }
-        }
 
         foreach (Model model in Engine.Models)
         {
-            ModelRenderData modelRenderData = model.RenderData;
-            if (!modelRenderData.Visible) continue;
-            _pbrShader.SetBool("shadowEnabled", modelRenderData.ShadowEnabled);
-
-            foreach (ModelPart corePart in model.Parts)
+            foreach (ModelPart modelPart in model.Parts)
             {
-                Matrix4 meshTransform = corePart.Transformation;
-                _pbrShader.SetMatrix4("model", ref meshTransform);
-                Matrix3 normalMat = corePart.NormalMatrix();
-                _pbrShader.SetMatrix3("normalMatrix", ref normalMat);
-                foreach (GenericMesh mesh in corePart.Meshes)
+                foreach (IMesh mesh in modelPart.Meshes)
                 {
                     if (!mesh.IsLoaded)
                     {
                         mesh.Load();
                         continue;
                     }
-                    _pbrShader.SetBool("hasTangents", mesh.HasTangents);
-
-                    IShaderData shaderData = mesh.ShaderData;
-                    if (shaderData is GenericMeshShaderData genericData)
+                    if (mesh.Material is null) continue;
+                    if (!mesh.Material.HasBeenBuilt)
                     {
-                        PBRMaterialData pbrMat = genericData.MaterialData;
-                        Texture2D albedo = pbrMat.AlbedoTexture;
-                        Texture2D normal = pbrMat.NormalTexture;
-                        Texture2D arm = pbrMat.ARMTexture;
-                        if (!albedo.Loaded) continue;
-                        albedo?.Use(TextureUnit.Texture1);
-                        _pbrShader.SetInt("material.albedoMap", 1);
-                        if (!normal.Loaded) continue;
-                        normal?.Use(TextureUnit.Texture2);
-                        _pbrShader.SetInt("material.normalMap", 2);
-                        if (!arm.Loaded) continue;
-                        arm?.Use(TextureUnit.Texture3);
-                        _pbrShader.SetInt("material.ARMMap", 3);
+                        mesh.Material.Build(Engine);
+                        mesh.Material.HasBeenBuilt = true;
                     }
-
+                    mesh.Material.Use(mesh);
+                    // TODO: Use SSBO for light data
+                    if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit && mesh.Material.ShaderProgram != null)
+                    {
+                        mesh.Material.ShaderProgram.SetVector3("dirLight.direction", ref Engine.DirectionalLight.Position);
+                        mesh.Material.ShaderProgram.SetVector3("dirLight.color", ref Engine.DirectionalLight.LightData.Color);
+                        mesh.Material.ShaderProgram.SetFloat("dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
+                        int pntLightI = 0;
+                        for (int i = 0; i < Engine.EngineSettings.MaximumLights; i++)
+                        {
+                            Light light = Engine.Lights[i];
+                            if (light is PointLight pbrPointLight)
+                            {
+                                mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].position", ref pbrPointLight.Position);
+                                mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].color", ref pbrPointLight.LightData.Color);
+                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].intensity", ref pbrPointLight.LightData.Intensity);
+                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].constant", ref pbrPointLight.LightData.Constant);
+                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].linear", ref pbrPointLight.LightData.Linear);
+                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].quadratic", ref pbrPointLight.LightData.Quadratic);
+                                pntLightI++;
+                            }
+                        }
+                    }
                     mesh.Render();
                 }
             }
@@ -162,13 +135,11 @@ public class ForwardRendering : IRenderPass
             _terrainShader?.SetMatrix3("normalMatrix", ref identityNorm);
             terrainMesh.Render();
         }
-        // ======================================
     }
     #endregion
 
     public void Dispose()
     {
-        _pbrShader?.Dispose();
         GC.SuppressFinalize(this);
     }
 }

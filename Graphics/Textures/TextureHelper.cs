@@ -200,6 +200,9 @@ public static class TextureHelper
         return colorTexture;
     }
 
+    /// <summary>Generates a default normal texture</summary>
+    public static Texture2D GenerateNormalTexture() => GenerateColorTexture(Color.FromArgb(128, 128, 255), 32, 32);
+
     /// <summary>
     /// Returns a base64 encoded string of the image not found image
     /// </summary>

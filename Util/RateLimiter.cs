@@ -1,13 +1,11 @@
 ﻿namespace GraphicsPlayground.Util;
 
-public class RateLimiter
+public class RateLimiter(float rate)
 {
-    private readonly float _rate;
+    private readonly float _rate = rate;
     private float _lastCall = 0f;
     private float _timeSinceLastCall = 0f;
     private bool _isFirstCall = true;
-
-    public RateLimiter(float rate) => _rate = rate;
 
     public bool CanProceed(float time)
     {

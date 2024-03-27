@@ -1,17 +1,20 @@
 ﻿using GraphicsPlayground.Graphics.Animations;
-using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Util;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Runtime.CompilerServices;
 using GraphicsPlayground.Graphics.Shader.Data;
+using GraphicsPlayground.Graphics.Materials;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
 
 /// <summary> A skeletal mesh that contains a hierarchy of bones that can be animated. </summary>
 public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
 {
+    /// <summary> The animator that will animate this mesh.</summary>
+    public Animator? Animator;
     /// <summary> Model part that owns this mesh. </summary>
     public ModelPart ParentPart { get; set; } = modelPart;
     /// <summary> Name of the mesh. </summary>
@@ -28,6 +31,8 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
     public BufferUsageHint MeshUsageHint => BufferUsageHint.DynamicDraw;
     /// <summary> Shader data for rendering the mesh. </summary>
     public IShaderData ShaderData { get; set; } = new GenericMeshShaderData(); // TODO: SkeletalMeshShaderData?
+    /// <summary> Material to render for this mesh. </summary>
+    public Material? Material { get; set; }
 
     // ====== Mesh Data ======
     public List<Vector3> Vertices { get; set; } = [];
@@ -42,7 +47,7 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
     public int TextureCoordsLength = 0;
     public int NormalsLength = 0;
     public int TangentsLength = 0;
-    public bool HasTangents = false;
+    public bool HasTangents { get; set; } = false;
     // =======================
 
     // ====== OpenGL Data =====
@@ -52,7 +57,7 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
     public int VertexArrayObject;
     // ========================
 
-    public bool IsLoaded = false;
+    public bool IsLoaded { get; set; } = false;
 
     public void Load()
     {
@@ -98,8 +103,6 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, VertexBufferObject, $"{Name} VBO");
         GL.BufferData(BufferTarget.ArrayBuffer, data.Count * Unsafe.SizeOf<SkeletalVertexData>(), data.ToArray(), MeshUsageHint);
         GraphicsUtil.CheckError($"{Name} VBO Load");
-
-
     }
 
     public void Render()
@@ -111,5 +114,19 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
     {
         // TODO: Dispose GPU resources.
         GC.SuppressFinalize(this);
+    }
+
+    public bool Equals(IMesh? x, IMesh? y)
+    {
+        if (x is null || y is null)
+        {
+            return false;
+        }
+        return x.ID == y.ID;
+    }
+
+    public int GetHashCode([DisallowNull] IMesh obj)
+    {
+        return HashCode.Combine(ID);
     }
 }

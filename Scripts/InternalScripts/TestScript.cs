@@ -1,4 +1,5 @@
-﻿using GraphicsPlayground.Graphics.Models;
+﻿using GraphicsPlayground.Graphics.Materials;
+using GraphicsPlayground.Graphics.Models;
 using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Graphics.Models.ShapeModels;
@@ -7,6 +8,7 @@ using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Terrain.World;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Drawing;
 
@@ -28,19 +30,19 @@ public class TestScript : IScript
                 Scale = new(1f, 1f, 1f)
             }
         };
-        Texture2D defaultAlbedo = TextureHelper.GenerateColorTexture(Color.White, 128, 128);
+        Texture2D defaultAlbedo = TextureHelper.GenerateColorTexture(Color.Blue, 128, 128);
         Texture2D defaultNormal = TextureHelper.GenerateColorTexture(ColorHelper.DefaultNormalMapColor, 128, 128);
         Texture2D defaultARM = TextureHelper.GenerateColorTexture(Color.FromArgb(255, 100, 200), 128, 128);
-        GenericMesh sphereMesh = new Torus(spherePart, 10, 5, 100, 250)
+        GenericMesh sphereMesh = new Sphere(spherePart, 10, 50, 100)
         {
-            ShaderData = new GenericMeshShaderData(
-                new PBRMaterialData()
-                {
-                    AlbedoTexture = defaultAlbedo,
-                    NormalTexture = defaultNormal,
-                    ARMTexture = defaultARM,
-                }
-            )
+            Material = new PBRMaterial("Sphere Material")
+            {
+                Albedo = defaultAlbedo,
+                Normal = defaultNormal,
+                Metallic = 0.8f,
+                Roughness = 0.2f,
+                AmbientOcclusion = 1.0f
+            }
         };
         spherePart.Meshes.Add(sphereMesh);
         sphere.Parts.Add(spherePart);
