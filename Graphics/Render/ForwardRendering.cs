@@ -18,10 +18,7 @@ public class ForwardRendering : IRenderPass
 
     #region Shaders
     private ShaderProgram? _terrainShader;
-    private int _lastShaderHandle = -1;
     #endregion
-
-    private int _previousShader = -1;
 
     public ForwardRendering(Engine engine)
     {

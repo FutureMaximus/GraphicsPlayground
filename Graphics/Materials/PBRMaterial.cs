@@ -116,7 +116,7 @@ public class PBRMaterial(string name) : Material(name)
             }
             else if (Metallic.GetType() == typeof(Texture2D))
             {
-                Properties.Add(new MaterialTextureProperty("material.metallicMap", (Texture2D)Metallic, TextureUnit.Texture2));
+                Properties.Add(new MaterialTextureProperty("material.metallic", (Texture2D)Metallic, TextureUnit.Texture2));
             }
             else if (Metallic.GetType() == typeof(float))
             {
@@ -135,7 +135,7 @@ public class PBRMaterial(string name) : Material(name)
             }
             else if (Roughness.GetType() == typeof(Texture2D))
             {
-                Properties.Add(new MaterialTextureProperty("material.roughnessMap", (Texture2D)Roughness, TextureUnit.Texture3));
+                Properties.Add(new MaterialTextureProperty("material.roughness", (Texture2D)Roughness, TextureUnit.Texture3));
             }
             else if (Roughness.GetType() == typeof(float))
             {
@@ -154,7 +154,7 @@ public class PBRMaterial(string name) : Material(name)
             }
             else if (AmbientOcclusion.GetType() == typeof(Texture2D))
             {
-                Properties.Add(new MaterialTextureProperty("material.ambientOcclusionMap", (Texture2D)AmbientOcclusion, TextureUnit.Texture4));
+                Properties.Add(new MaterialTextureProperty("material.ambientOcclusion", (Texture2D)AmbientOcclusion, TextureUnit.Texture4));
             }
             else if (AmbientOcclusion.GetType() == typeof(float))
             {

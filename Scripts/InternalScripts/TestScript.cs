@@ -21,8 +21,8 @@ public class TestScript : IScript
 
     void IScript.OnLoad(Engine engine)
     {
-        Model sphere = new("sphere");
-        ModelPart spherePart = new("Sphere Part", sphere)
+        Model model = new("model");
+        ModelPart spherePart = new("Sphere Part", model)
         {
             LocalTransformation = new()
             {
@@ -30,28 +30,50 @@ public class TestScript : IScript
                 Scale = new(1f, 1f, 1f)
             }
         };
+        ModelPart donutPart = new("Donut Part", model)
+        {
+            LocalTransformation = new()
+            {
+                Position = new(50f, 0f, 0f),
+                Scale = new(1f, 1f, 1f)
+            }
+        };
         Texture2D defaultAlbedo = TextureHelper.GenerateColorTexture(Color.Blue, 128, 128);
+        Texture2D metallic = TextureHelper.GenerateColorTexture(Color.White, 128, 128);
         Texture2D defaultNormal = TextureHelper.GenerateColorTexture(ColorHelper.DefaultNormalMapColor, 128, 128);
         Texture2D defaultARM = TextureHelper.GenerateColorTexture(Color.FromArgb(255, 100, 200), 128, 128);
         GenericMesh sphereMesh = new Sphere(spherePart, 10, 50, 100)
         {
-            Material = new PBRMaterial("Sphere Material")
+            Material = new PBRMaterial("Sphere PBR Material")
             {
                 Albedo = defaultAlbedo,
                 Normal = defaultNormal,
-                Metallic = 0.8f,
-                Roughness = 0.2f,
+                Metallic = metallic,
+                Roughness = 0.5f,
                 AmbientOcclusion = 1.0f
             }
         };
+        GenericMesh donutMesh = new Torus(donutPart, 20, 5, 50, 100)
+        {
+            Material = new PBRMaterial("Donut PBR Material")
+            {
+                Albedo = new Vector3(1.0f, 0.5f, 0.5f),
+                Normal = defaultNormal,
+                Metallic = metallic,
+                Roughness = 0.8f,
+                AmbientOcclusion = 0.5f
+            }
+        };
         spherePart.Meshes.Add(sphereMesh);
-        sphere.Parts.Add(spherePart);
-        engine.Models.Add(sphere);
+        donutPart.Meshes.Add(donutMesh);
+        model.Parts.Add(spherePart);
+        model.Parts.Add(donutPart);
+        engine.Models.Add(model);
 
         WorldSettings settings = new()
         {
             TargetPosition = new Vector3(0, 0, 0),
-            WorldSize = CoordinateUtilities.NextPowerOf2(10000)
+            WorldSize = CoordinateUtilities.NextPowerOf2(1000)
         };
         Noise heightNoise = new();
         heightNoise.SetNoiseType(Noise.NoiseType.OpenSimplex2S);
@@ -74,8 +96,8 @@ public class TestScript : IScript
         World = world;
         Engine = engine;
         World = world;
-        //World?.Start();
-        //World?.Update();
+        World?.Start();
+        World?.Update();
         LODGenerator.GenerateLODs(sphereMesh, 12, 15000, 200);
 
         engine.OnCustomImGuiLogic += CustomImGui;
