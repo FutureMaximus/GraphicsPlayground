@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Terrain.Chunks;
 
+/// <summary>Provides chunk updates using an octree.</summary>
 public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState worldState)
 {
     /// <summary>The octree used for partitioning the chunks.</summary>
@@ -48,10 +49,6 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState wor
                 return 0;
             }
         });
-        foreach (ChunkUpdate chunkUpdate in ChunkUpdates)
-        {
-            Console.WriteLine("Chunk update: " + chunkUpdate.Position + " LOD: " + chunkUpdate.LOD + " Neighbors Mask: " + chunkUpdate.NeighborsMask);
-        }
     }
 
     /// <summary>Gets the chunk updates for the given node.</summary>
@@ -210,7 +207,7 @@ public class ChunkUpdateExecutor(WorldSettings worldSettings, ref WorldState wor
     }
 
 
-    /// <summary>Checks if the node can be rendered based on the distance from the target position.</summary>
+    /// <summary>Checks if the node can be rendered based on the distance from the target position using the octree this is not culling distance.</summary>
     public bool CanRender(OctreeNode node)
     {
         if (node.Depth == 0)

@@ -14,13 +14,17 @@ public class TransvoxelMesher(in List<float> densityData, DensityGenerator densi
     public readonly List<float> DensityData = densityData;
     /// <summary> The generator used for the density data. </summary>
     public DensityGenerator DensityGenerator = densityGenerator;
+    /// <summary> The minimum position of the chunk. </summary>
     public Vector3i ChunkMin;
+    /// <summary> The lod of the chunk. </summary>
     public int LOD;
+    /// <summary> The neighbors mask of the chunk. </summary>
     public int NeighborsMask;
     /// <summary> The size of the chunk. </summary>
     public int ChunkSize;
     /// <summary> The cell width of the transition cells.</summary>
     public const float TRANSITION_CELL_WIDTH_PERCENTAGE = 0.5f;
+    /// <summary> The mesh data container for the terrain. </summary>
     public TerrainMeshRenderContainer MeshDataContainer;
 
     /// <summary>Returns the density value at the given position.</summary>
@@ -33,10 +37,7 @@ public class TransvoxelMesher(in List<float> densityData, DensityGenerator densi
 
     /// <summary>Returns the density value at the given position.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public float GetDensityValue(Vector3i pos)
-    {
-        return GetDensityValue(pos.X, pos.Y, pos.Z);
-    }
+    public float GetDensityValue(Vector3i pos) => GetDensityValue(pos.X, pos.Y, pos.Z);
 
     #region Transvoxel Polygonize
     public void Polygonise()
@@ -267,6 +268,7 @@ public class TransvoxelMesher(in List<float> densityData, DensityGenerator densi
     #endregion
 
     #region Transvoxel Transition Polygonize
+    /// <summary> Polygonises the transition data for the given direction. </summary>
     public void PolygoniseTransitions()
     {
         PolygoniseTransition(MeshDataContainer.LeftTransitionData, TransitionDirection.XMin);
@@ -277,6 +279,7 @@ public class TransvoxelMesher(in List<float> densityData, DensityGenerator densi
         PolygoniseTransition(MeshDataContainer.ForwardTransitionData, TransitionDirection.ZMax);
     }
 
+    /// <summary> Polygonises the transition data for the given direction. </summary>
     public void PolygoniseTransition(TerrainMeshRenderData renderData, TransitionDirection direction)
     {
         int padding = 1;

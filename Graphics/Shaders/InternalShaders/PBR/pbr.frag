@@ -20,16 +20,35 @@ layout (std140, binding = 0) uniform ProjView
 
 struct Material
 {
-	sampler2D  albedoMap;
+#ifdef ALBEDO_VECTOR3
+	vec3 albedo;
+#else
+	sampler2D  albedo;
+#endif
 	sampler2D  normalMap;
+#ifdef USING_ARM_MAP
 	sampler2D  ARMMap; // R = Ambient Occlusion, G = Roughness, B = Metallic
+#else
+	#ifdef METALLIC_FLOAT
+	float metallic;
+	#else
+	sampler2D metallic;
+	#endif
+	#ifdef ROUGHNESS_FLOAT
+	float roughness;
+	#else
+	sampler2D roughness;
+	#endif
+	#ifdef AMBIENT_OCCLUSION_FLOAT
+	float ambientOcclusion;
+	#else
+	sampler2D ambientOcclusion;
+	#endif
+#endif
 };
 uniform Material material;
 
-uniform bool shadowEnabled;
 uniform bool hasTangents;
-uniform sampler2DArray shadowMap;
-uniform float farPlane;
 
 struct Light
 {
@@ -148,10 +167,33 @@ void main()
 
 	vec3 V = normalize(viewPos - fs_in.FragPos);
 
-	vec3  albedo = pow(texture(material.albedoMap, fs_in.TexCoords).rgb, vec3(2.2));
+#ifdef ALBEDO_VECTOR3
+	vec3  albedo = pow(material.albedo, vec3(2.2));
+#else
+	vec3  albedo = pow(texture(material.albedo, fs_in.TexCoords).rgb, vec3(2.2));
+#endif
+
+#ifdef USING_ARM_MAP
 	float ambientOcclusion = texture(material.ARMMap, fs_in.TexCoords).r;
 	float roughness = texture(material.ARMMap, fs_in.TexCoords).g;
-	float metallic  = texture(material.ARMMap, fs_in.TexCoords).b;
+	float metallic = texture(material.ARMMap, fs_in.TexCoords).b;
+#else
+	#ifdef METALLIC_FLOAT
+	float metallic = material.metallic;
+	#else
+	float metallic = texture(material.metallic, fs_in.TexCoords).r;
+	#endif
+	#ifdef ROUGHNESS_FLOAT
+	float roughness = material.roughness;
+	#else
+	float roughness = texture(material.roughness, fs_in.TexCoords).r;
+	#endif
+	#ifdef AMBIENT_OCCLUSION_FLOAT
+	float ambientOcclusion = material.ambientOcclusion;
+	#else
+	float ambientOcclusion = texture(material.ambientOcclusion, fs_in.TexCoords).r;
+	#endif
+#endif
 
 	// Calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
 	// of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
@@ -215,7 +257,7 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, floa
 	// Inverse square law attenuation for control over the light's falloff.
 	float attenuation = 1.0 / (light.constant + light.linear * dist +
 	light.quadratic * (dist * dist));
-	// Intesity to control the brightness of the light
+	// Intensity to control the brightness of the light
 	attenuation *= light.intensity;
 	vec3  radiance = light.color * attenuation;
 

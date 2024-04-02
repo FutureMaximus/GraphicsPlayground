@@ -11,8 +11,8 @@ public struct AnimationNodeInfo(Matrix4 transform, string name, int childrenCoun
     public List<AnimationNodeInfo> Children = [];
 }
 
-/// <summary> A skeletal animation that can be applied to a skeletal mesh. </summary>
-public class Animation
+/// <summary>A skeletal animation that can be applied to a skeletal mesh.</summary>
+public sealed class Animation
 {
     public string Name;
     public float Duration = 0;

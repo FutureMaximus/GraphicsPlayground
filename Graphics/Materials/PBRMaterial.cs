@@ -173,6 +173,6 @@ public class PBRMaterial(string name) : Material(name)
             sb.Append($"{directive}\n");
         }
 
-        ShaderProgram = new ShaderProgram(engine.ShaderHandler, Name, "pbr_test", sb.ToString());
+        ShaderProgram = new ShaderProgram(engine.ShaderHandler, Name, "pbr", sb.ToString());
     }
 }

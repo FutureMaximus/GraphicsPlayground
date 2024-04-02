@@ -13,6 +13,7 @@ using GraphicsPlayground.Scripts;
 using OpenTK.Windowing.Common;
 using GraphicsPlayground.Graphics.Terrain.Meshing;
 using GraphicsPlayground.Graphics.Models;
+using System.Reflection;
 
 namespace GraphicsPlayground.Graphics.Render;
 
@@ -38,6 +39,7 @@ public class Engine
     public List<Light> Lights;
     public DirectionalLight? DirectionalLight;
     public Action? OnCustomImGuiLogic;
+    public Dictionary<MethodInfo, object> CustomUIStuff = [];
 
     public float DeltaTime { get; set; }
     public float TimeElapsed

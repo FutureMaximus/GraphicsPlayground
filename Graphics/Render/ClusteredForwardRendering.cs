@@ -21,6 +21,7 @@ public class ClusteredForwardRendering : IRenderPass
         ClusterShader = new ComputeShader(Engine.ShaderHandler, "Cluster", "cluster");
     }
 
+    /// <summary>Loads the renderer.</summary>
     public void Load()
     {
         if (AABBShader == null || ClusterShader == null)
@@ -33,10 +34,15 @@ public class ClusteredForwardRendering : IRenderPass
         GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);
     }
 
+    /// <summary>Updates the renderer.</summary>
     public void Render()
     {
-        // This should be moved somewhere else but for now it's fine
-        AABBShader?.Use();
+        if (AABBShader == null || ClusterShader == null)
+        {
+            return;
+        }
+        // This should be moved somewhere else that updates when needed but for now it's fine
+        AABBShader.Use();
         ShaderProgram.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
         ShaderProgram.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
         GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);

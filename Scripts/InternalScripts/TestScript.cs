@@ -73,7 +73,7 @@ public class TestScript : IScript
         WorldSettings settings = new()
         {
             TargetPosition = new Vector3(0, 0, 0),
-            WorldSize = CoordinateUtilities.NextPowerOf2(1000)
+            WorldSize = CoordinateUtilities.NextPowerOf2(500)
         };
         Noise heightNoise = new();
         heightNoise.SetNoiseType(Noise.NoiseType.OpenSimplex2S);
@@ -96,9 +96,9 @@ public class TestScript : IScript
         World = world;
         Engine = engine;
         World = world;
-        World?.Start();
-        World?.Update();
-        LODGenerator.GenerateLODs(sphereMesh, 12, 15000, 200);
+        /*World?.Start();
+        World?.Update();*/
+        //LODGenerator.GenerateLODs(sphereMesh, 12, 15000, 200);
 
         engine.OnCustomImGuiLogic += CustomImGui;
     }

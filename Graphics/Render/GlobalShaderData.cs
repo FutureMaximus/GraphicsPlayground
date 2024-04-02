@@ -4,6 +4,7 @@ using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Util;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground.Graphics.Render;
@@ -41,28 +42,25 @@ public static class GlobalShaderData
         // 64 bytes for projection matrix, 64 bytes for view matrix, 16 bytes for camera position.
         GL.BindBuffer(BufferTarget.UniformBuffer, ProjViewUBO);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ProjViewUBO, "ProjViewUBO Location 0");
-        int projViewUBOSize = Marshal.SizeOf(typeof(Matrix4)) * 2 + Marshal.SizeOf(typeof(Vector3));
+        int projViewUBOSize = Unsafe.SizeOf<Matrix4>() * 2 + Unsafe.SizeOf<Vector3>();
         GL.BufferData(BufferTarget.UniformBuffer, projViewUBOSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
         GraphicsUtil.CheckError("UBO 0 (ProjView) Buffer Data");
-
         GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, ProjViewUBO);
         GraphicsUtil.CheckError("UBO 0 (ProjView) Buffer Base");
-
         ProjViewUniform projViewUniform = new(engine.Projection, engine.Camera.View, engine.Camera.Position);
-        GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, Marshal.SizeOf(typeof(Matrix4)), ref projViewUniform.Projection);
-        GL.BufferSubData(BufferTarget.UniformBuffer, Marshal.SizeOf(typeof(Matrix4)), Marshal.SizeOf(typeof(Matrix4)), ref projViewUniform.View);
-        GL.BufferSubData(BufferTarget.UniformBuffer, Marshal.SizeOf(typeof(Matrix4)) * 2, Marshal.SizeOf(typeof(Vector3)), ref projViewUniform.ViewPos);
+        GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, Unsafe.SizeOf<Matrix4>(), ref projViewUniform.Projection);
+        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>(), Unsafe.SizeOf<Matrix4>(), ref projViewUniform.View);
+        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>() * 2, Unsafe.SizeOf<Vector3>(), ref projViewUniform.ViewPos);
         GraphicsUtil.CheckError("UBO 0 (ProjView) Error");
-
         GL.BindBuffer(BufferTarget.UniformBuffer, 0);
 
-        // ShaderProgram Storage Buffer Objects (Read-Write)
+        // Shader Storage Buffer Objects (Read-Write)
 
         // Cluster Data SSBO
-        // 4 bytes for min location (x, y, z) and 4 bytes for max location (x, y, z).
+        // 24 bytes for min and max AABB, * (TILE_SIZE_X * TILE_SIZE_Y * TILE_SIZE_Z) number of bytes.
         ClusterSSBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ClusterSSBO);
-        GL.BufferData(BufferTarget.ShaderStorageBuffer, sizeof(float) * 8 * (int)GRID_SIZE, IntPtr.Zero, BufferUsageHint.StaticCopy);
+        GL.BufferData(BufferTarget.ShaderStorageBuffer, (int)(GRID_SIZE * Unsafe.SizeOf<VolumeTileAABB>()), IntPtr.Zero, BufferUsageHint.StaticCopy);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ClusterSSBO, "ClusterSSBO Location 1");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, ClusterSSBO);
         GraphicsUtil.CheckError("SSBO 1 (Cluster) Buffer Base");
@@ -77,14 +75,13 @@ public static class GlobalShaderData
         screen2View.TileSizePixels.X = 1f / MathF.Ceiling(engine.Window.ClientSize.X / (float)GRID_SIZE_X);
         screen2View.TileSizePixels.Y = 1f / MathF.Ceiling(engine.Window.ClientSize.Y / (float)GRID_SIZE_Y);
         screen2View.ViewPixelSize = new Vector2(1f / engine.Window.ClientSize.X, 1f / engine.Window.ClientSize.Y);
-        // Basically reduced a log function into a simple multiplication an addition by pre-calculating these
         screen2View.SliceScalingFactor = GRID_SIZE_Z / MathF.Log2(engine.EngineSettings.ClusteredDepthFar / engine.EngineSettings.ClusteredDepthNear);
         screen2View.SliceBiasFactor = -(GRID_SIZE_Z * MathF.Log2(
             engine.EngineSettings.ClusteredDepthNear) / MathF.Log2(engine.EngineSettings.ClusteredDepthFar / engine.EngineSettings.ClusteredDepthNear));
         Screen2ViewSSBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, Screen2ViewSSBO);
-        GL.BufferData(BufferTarget.ShaderStorageBuffer, Marshal.SizeOf(typeof(Screen2View)), IntPtr.Zero, BufferUsageHint.StaticCopy);
-        GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, Marshal.SizeOf(typeof(Screen2View)), ref screen2View);
+        GL.BufferData(BufferTarget.ShaderStorageBuffer, Unsafe.SizeOf<Screen2View>(), IntPtr.Zero, BufferUsageHint.StaticCopy);
+        GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, Unsafe.SizeOf<Screen2View>(), ref screen2View);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, Screen2ViewSSBO, "Screen2ViewSSBO Location 2");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, Screen2ViewSSBO);
         GraphicsUtil.CheckError("SSBO 2 (Screen2View) Buffer Base");
@@ -94,8 +91,7 @@ public static class GlobalShaderData
         // 12 bytes for position, 4 bytes for max range.
         LightDataSSBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, LightDataSSBO);
-        GL.BufferData(BufferTarget.ShaderStorageBuffer,
-            Marshal.SizeOf(typeof(GPUPointLightData)) * engine.EngineSettings.MaximumLights, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+        GL.BufferData(BufferTarget.ShaderStorageBuffer, Unsafe.SizeOf<GPUPointLightData>() * engine.EngineSettings.MaximumLights, IntPtr.Zero, BufferUsageHint.DynamicDraw);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, LightDataSSBO, "LightDataSSBO Location 3");
         int pointLightIndex = 0;
         for (int i = 0; i < engine.EngineSettings.MaximumLights; i++)
@@ -164,9 +160,9 @@ public static class GlobalShaderData
     public static void UpdateProjViewUBO(ref ProjViewUniform projViewUniform)
     {
         GL.BindBuffer(BufferTarget.UniformBuffer, ProjViewUBO);
-        GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, Marshal.SizeOf(typeof(Matrix4)), ref projViewUniform.Projection);
-        GL.BufferSubData(BufferTarget.UniformBuffer, Marshal.SizeOf(typeof(Matrix4)), Marshal.SizeOf(typeof(Matrix4)), ref projViewUniform.View);
-        GL.BufferSubData(BufferTarget.UniformBuffer, Marshal.SizeOf(typeof(Matrix4)) * 2, Marshal.SizeOf(typeof(Vector3)), ref projViewUniform.ViewPos);
+        GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, Unsafe.SizeOf<Matrix4>(), ref projViewUniform.Projection);
+        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>(), Unsafe.SizeOf<Matrix4>(), ref projViewUniform.View);
+        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>() * 2, Unsafe.SizeOf<Vector3>(), ref projViewUniform.ViewPos);
         GraphicsUtil.CheckError("UBO 0 (ProjView) Error");
         GL.BindBuffer(BufferTarget.UniformBuffer, 0);
     }

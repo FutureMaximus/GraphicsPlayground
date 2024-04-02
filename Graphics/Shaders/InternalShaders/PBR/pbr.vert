@@ -25,6 +25,7 @@ uniform bool hasTangents;
 
 void main()
 {
+	// TODO: Skeletal mesh precursor code
 	gl_Position = vec4(aPosition, 1.0) * model * view * projection;
 	vs_out.FragPos = vec3(vec4(aPosition, 1.0) * model);
 	vec3 normal = normalize(aNormal * normalMatrix);

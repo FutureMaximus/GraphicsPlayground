@@ -68,7 +68,6 @@ public class Window : GameWindow
     {
         base.OnUpdateFrame(args);
         float deltaTime = (float)args.Time;
-
         KeyboardState keyboardState = KeyboardState;
         if (keyboardState.IsKeyDown(Keys.Escape))
         {
@@ -93,7 +92,6 @@ public class Window : GameWindow
     protected override void OnResize(ResizeEventArgs e)
     {
         base.OnResize(e);
-
         GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
         Engine.EngineSettings.WindowSize = new Vector2i(ClientSize.X, ClientSize.Y);
         Engine.EngineSettings.AspectRatio = ClientSize.X / (float)ClientSize.Y;
