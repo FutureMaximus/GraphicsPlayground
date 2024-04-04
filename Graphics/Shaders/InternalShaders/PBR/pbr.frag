@@ -53,13 +53,11 @@ uniform bool hasTangents;
 struct Light
 {
 	vec3  position;
+	float range;
 	vec3  color;
 	float intensity;
-	float constant;
-	float linear;
-	float quadratic;
 };
-#define NR_LIGHTS 7 // TODO: Use SSBO instead for point light array.
+#define NR_LIGHTS 100 // TODO: Use SSBO instead for point light array.
 uniform Light pointLights[NR_LIGHTS];
 
 struct DirectionalLight
@@ -253,12 +251,11 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, floa
 {
 	vec3 L = normalize(light.position - fs_in.FragPos);
 	vec3 H = normalize(V + L);
-	float dist = length(light.position - fs_in.FragPos);
 	// Inverse square law attenuation for control over the light's falloff.
-	float attenuation = 1.0 / (light.constant + light.linear * dist +
-	light.quadratic * (dist * dist));
+	float dist = length(light.position - fragPos);
+	float attenuation = pow(clamp(1 - pow((dist / light.range), 4.0), 0.0, 1.0), 2.0)/(1.0  + (dist * dist));
 	// Intensity to control the brightness of the light
-	attenuation *= light.intensity;
+	//attenuation *= light.intensity;
 	vec3  radiance = light.color * attenuation;
 
 	float NDF = D_GGX(N, H, rough);

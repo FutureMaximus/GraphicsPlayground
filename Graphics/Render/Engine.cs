@@ -67,7 +67,7 @@ public class Engine
             UseForwardRendering = true,
             UseDebugRendering = false,
             UseOrthographic = false,
-            MaximumLights = 7,
+            MaximumLights = 100,
             FieldOfView = 70f,
             AspectRatio = 1f,
             DepthNear = 0.1f,
@@ -88,7 +88,7 @@ public class Engine
             {
                 Color = randColor,
                 Intensity = 5f,
-                Range = 100f,
+                Range = 10000f,
                 Enabled = false
             };
             float range = 100;
