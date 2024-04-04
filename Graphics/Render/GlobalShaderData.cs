@@ -90,7 +90,11 @@ public static class GlobalShaderData
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, LightDataSSBO);
         GL.BufferData(BufferTarget.ShaderStorageBuffer, Unsafe.SizeOf<GPUPointLightData>() * engine.EngineSettings.MaximumLights, IntPtr.Zero, BufferUsageHint.DynamicDraw);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, LightDataSSBO, "LightDataSSBO Location 3");
-        IntPtr bufferPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.WriteOnly);
+        IntPtr lightBufferPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.WriteOnly);
+        if (lightBufferPtr == IntPtr.Zero)
+        {
+            throw new Exception("Failed to map LightDataSSBO buffer.");
+        }
         GraphicsUtil.CheckError("SSBO 3 (LightData) Buffer Map");
         int pointLightIndex = 0;
         for (int i = 0; i < engine.EngineSettings.MaximumLights; i++)
@@ -106,14 +110,14 @@ public static class GlobalShaderData
                     Color = lightData.Color,
                     Intensity = lightData.Intensity
                 };
-                Marshal.StructureToPtr(gpuPointLightData, bufferPtr + Marshal.SizeOf(typeof(GPUPointLightData)) * pointLightIndex, false);
+                Marshal.StructureToPtr(gpuPointLightData, lightBufferPtr + Marshal.SizeOf(typeof(GPUPointLightData)) * pointLightIndex, false);
                 pointLightIndex++;
             }
         }
         GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
         GraphicsUtil.CheckError("SSBO 3 (LightData) Buffer Unmap");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, LightDataSSBO);
-        GraphicsUtil.CheckError("SSBO 3 (LightData) Buffer Base");
+        GraphicsUtil.CheckError("SSBO 3 (LightData) Bind Buffer Base");
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
 
         // Light Index List SSBO
@@ -123,7 +127,7 @@ public static class GlobalShaderData
         GL.BufferData(BufferTarget.ShaderStorageBuffer, sizeof(uint) * (int)numberOfLights, IntPtr.Zero, BufferUsageHint.StaticCopy);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, LightIndexListSSBO, "LightIndexListSSBO Location 4");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, LightIndexListSSBO);
-        GraphicsUtil.CheckError("SSBO 4 (LightIndexList) Buffer Base");
+        GraphicsUtil.CheckError("SSBO 4 (LightIndexList) Bind Buffer Base");
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
 
         // Light Grid SSBO
@@ -135,7 +139,7 @@ public static class GlobalShaderData
         GL.BufferData(BufferTarget.ShaderStorageBuffer, sizeof(uint) * 2 * (int)GRID_SIZE, IntPtr.Zero, BufferUsageHint.StaticCopy);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, LightGridSSBO, "LightGridSSBO Location 5");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 5, LightGridSSBO);
-        GraphicsUtil.CheckError("SSBO 5 (LightGrid) Buffer Base");
+        GraphicsUtil.CheckError("SSBO 5 (LightGrid) Bind Buffer Base");
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
 
         // Light Index Global Count SSBO
@@ -144,7 +148,7 @@ public static class GlobalShaderData
         GL.BufferData(BufferTarget.ShaderStorageBuffer, sizeof(uint), IntPtr.Zero, BufferUsageHint.StaticCopy);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, LightIndexGlobalCountSSBO, "LightIndexGlobalCountSSBO Location 6");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 6, LightIndexGlobalCountSSBO);
-        GraphicsUtil.CheckError("SSBO 6 (LightIndexGlobalCount) Buffer Base");
+        GraphicsUtil.CheckError("SSBO 6 (LightIndexGlobalCount) Bind Buffer Base");
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
 
         GraphicsUtil.CheckError("Global ShaderProgram Data Buffer Init");
@@ -154,9 +158,13 @@ public static class GlobalShaderData
     public static void UpdateProjViewUBO(ref ProjViewUniform projViewUniform)
     {
         GL.BindBuffer(BufferTarget.UniformBuffer, ProjViewUBO);
-        GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, Unsafe.SizeOf<Matrix4>(), ref projViewUniform.Projection);
-        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>(), Unsafe.SizeOf<Matrix4>(), ref projViewUniform.View);
-        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>() * 2, Unsafe.SizeOf<Vector3>(), ref projViewUniform.ViewPos);
+        IntPtr ptr = GL.MapBuffer(BufferTarget.UniformBuffer, BufferAccess.WriteOnly);
+        if (ptr == IntPtr.Zero)
+        {
+            throw new Exception("Failed to map ProjViewUBO buffer.");
+        }
+        Marshal.StructureToPtr(projViewUniform, ptr, false);
+        GL.UnmapBuffer(BufferTarget.UniformBuffer);
         GraphicsUtil.CheckError("UBO 0 (ProjView) Error");
         GL.BindBuffer(BufferTarget.UniformBuffer, 0);
     }

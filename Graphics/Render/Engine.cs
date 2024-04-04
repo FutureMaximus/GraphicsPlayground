@@ -88,10 +88,7 @@ public class Engine
             {
                 Color = randColor,
                 Intensity = 5f,
-                Range = 500f,
-                Constant = 1.0f,
-                Linear = 0.09f,
-                Quadratic = 0.032f,
+                Range = 100f,
                 Enabled = false
             };
             float range = 100;

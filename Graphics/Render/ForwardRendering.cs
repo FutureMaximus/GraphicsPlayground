@@ -112,9 +112,6 @@ public class ForwardRendering : IRenderPass
                                 mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].position", ref pbrPointLight.Position);
                                 mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].color", ref pbrPointLight.LightData.Color);
                                 mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].intensity", ref pbrPointLight.LightData.Intensity);
-                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].constant", ref pbrPointLight.LightData.Constant);
-                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].linear", ref pbrPointLight.LightData.Linear);
-                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].quadratic", ref pbrPointLight.LightData.Quadratic);
                                 pntLightI++;
                             }
                         }
