@@ -8,14 +8,11 @@ namespace GraphicsPlayground.Graphics.Shaders.Data;
 /// Light data that is sent to the GPU.
 /// We need to use a struct for memory alignment.
 /// </summary>
-[StructLayout(LayoutKind.Sequential, Pack = 16)]
-public struct GPUPointLightData()
+[StructLayout(LayoutKind.Sequential)]
+public struct GPUPointLightData
 {
     public Vector3 Position;
-    public float MaxRange;
+    public float Range;
     public Vector3 Color;
     public float Intensity;
-    public float Constant;
-    public float Linear;
-    public float Quadratic;
 }

@@ -38,8 +38,8 @@ public static class GlobalShaderData
         // Uniform Buffer Objects (Read-Only)
 
         // ProjView UBO
-        ProjViewUBO = GL.GenBuffer();
         // 64 bytes for projection matrix, 64 bytes for view matrix, 16 bytes for camera position.
+        ProjViewUBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.UniformBuffer, ProjViewUBO);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ProjViewUBO, "ProjViewUBO Location 0");
         int projViewUBOSize = Unsafe.SizeOf<Matrix4>() * 2 + Unsafe.SizeOf<Vector3>();
@@ -57,7 +57,7 @@ public static class GlobalShaderData
         // Shader Storage Buffer Objects (Read-Write)
 
         // Cluster Data SSBO
-        // 24 bytes for min and max AABB, * (TILE_SIZE_X * TILE_SIZE_Y * TILE_SIZE_Z) number of bytes.
+        // 32 bytes for min and max AABB * (GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z) number of bytes.
         ClusterSSBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ClusterSSBO);
         GL.BufferData(BufferTarget.ShaderStorageBuffer, (int)(GRID_SIZE * Unsafe.SizeOf<VolumeTileAABB>()), IntPtr.Zero, BufferUsageHint.StaticCopy);
@@ -67,32 +67,31 @@ public static class GlobalShaderData
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
 
         // Screen2View SSBO
+        // 64 bytes for inverse projection, 16 bytes for tile sizes, 8 bytes for screen size, 4 bytes for slice scaling factor, 4 bytes for slice bias factor.
+        int sizeX = (int)Math.Ceiling(engine.Window.ClientSize.X / (float)GRID_SIZE_X);
         Screen2View screen2View;
         screen2View.InverseProjection = Matrix4.Invert(engine.ClusteredRenderProjection);
-        screen2View.TileSizeX = GRID_SIZE_X;
-        screen2View.TileSizeY = GRID_SIZE_Y;
-        screen2View.TileSizeZ = GRID_SIZE_Z;
-        screen2View.TileSizePixels.X = 1f / MathF.Ceiling(engine.Window.ClientSize.X / (float)GRID_SIZE_X);
-        screen2View.TileSizePixels.Y = 1f / MathF.Ceiling(engine.Window.ClientSize.Y / (float)GRID_SIZE_Y);
-        screen2View.ViewPixelSize = new Vector2(1f / engine.Window.ClientSize.X, 1f / engine.Window.ClientSize.Y);
+        screen2View.TileSizes = new Vector4i((int)GRID_SIZE_X, (int)GRID_SIZE_Y, (int)GRID_SIZE_Z, sizeX);
+        screen2View.ScreenSize = new Vector2i(engine.Window.ClientSize.X, engine.Window.ClientSize.Y);
         screen2View.SliceScalingFactor = GRID_SIZE_Z / MathF.Log2(engine.EngineSettings.ClusteredDepthFar / engine.EngineSettings.ClusteredDepthNear);
         screen2View.SliceBiasFactor = -(GRID_SIZE_Z * MathF.Log2(
             engine.EngineSettings.ClusteredDepthNear) / MathF.Log2(engine.EngineSettings.ClusteredDepthFar / engine.EngineSettings.ClusteredDepthNear));
         Screen2ViewSSBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, Screen2ViewSSBO);
-        GL.BufferData(BufferTarget.ShaderStorageBuffer, Unsafe.SizeOf<Screen2View>(), IntPtr.Zero, BufferUsageHint.StaticCopy);
-        GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, Unsafe.SizeOf<Screen2View>(), ref screen2View);
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, Screen2ViewSSBO, "Screen2ViewSSBO Location 2");
+        GL.BufferData(BufferTarget.ShaderStorageBuffer, Unsafe.SizeOf<Screen2View>(), ref screen2View, BufferUsageHint.StaticCopy);
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, Screen2ViewSSBO, "Screen2View SSBO Location 2");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, Screen2ViewSSBO);
         GraphicsUtil.CheckError("SSBO 2 (Screen2View) Buffer Base");
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
 
         // Light Data SSBO
-        // 12 bytes for position, 4 bytes for max range.
+        // 12 bytes for position, 4 bytes for range * (The maximum number of lights) number of bytes.
         LightDataSSBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, LightDataSSBO);
         GL.BufferData(BufferTarget.ShaderStorageBuffer, Unsafe.SizeOf<GPUPointLightData>() * engine.EngineSettings.MaximumLights, IntPtr.Zero, BufferUsageHint.DynamicDraw);
         GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, LightDataSSBO, "LightDataSSBO Location 3");
+        IntPtr bufferPtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.WriteOnly);
+        GraphicsUtil.CheckError("SSBO 3 (LightData) Buffer Map");
         int pointLightIndex = 0;
         for (int i = 0; i < engine.EngineSettings.MaximumLights; i++)
         {
@@ -103,21 +102,16 @@ public static class GlobalShaderData
                 GPUPointLightData gpuPointLightData = new()
                 {
                     Position = pointLight.Position,
-                    MaxRange = lightData.MaxRange,
+                    Range = lightData.Range,
                     Color = lightData.Color,
-                    Intensity = lightData.Intensity,
-                    Constant = lightData.Constant,
-                    Linear = lightData.Linear,
-                    Quadratic = lightData.Quadratic
+                    Intensity = lightData.Intensity
                 };
-                // TODO: Implement light updates.
-                GL.BufferSubData(BufferTarget.ShaderStorageBuffer, 
-                    Marshal.SizeOf(typeof(GPUPointLightData)) * pointLightIndex,
-                    Marshal.SizeOf(typeof(GPUPointLightData)), ref gpuPointLightData);
-                GraphicsUtil.CheckError("SSBO 3 (LightData) Buffer Sub Data");
+                Marshal.StructureToPtr(gpuPointLightData, bufferPtr + Marshal.SizeOf(typeof(GPUPointLightData)) * pointLightIndex, false);
                 pointLightIndex++;
             }
         }
+        GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
+        GraphicsUtil.CheckError("SSBO 3 (LightData) Buffer Unmap");
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, LightDataSSBO);
         GraphicsUtil.CheckError("SSBO 3 (LightData) Buffer Base");
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);

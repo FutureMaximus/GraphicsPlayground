@@ -10,14 +10,8 @@ public struct PBRLightData : IShaderData
     public Vector3 Color;
     /// <summary>The intensity of the light this is multiplied with the attenuation factor.</summary>
     public float Intensity;
-    /// <summary>The maximum range before this light is culled.</summary>
-    public float MaxRange;
-    /// <summary>Constant attenuation factor.</summary>
-    public float Constant;
-    /// <summary>Linear attenuation factor.</summary>
-    public float Linear;
-    /// <summary>Quadratic attenuation factor.</summary>
-    public float Quadratic;
+    /// <summary>The range of the light.</summary>
+    public float Range;
     /// <summary>Whether the light is enabled.</summary>
     public bool Enabled;
 }
