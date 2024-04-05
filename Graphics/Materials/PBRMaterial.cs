@@ -51,14 +51,7 @@ public class PBRMaterial(string name) : Material(name)
         {
             property.UseMaterialProperty(ref ShaderProgram);
         }
-        if (mesh.HasTangents)
-        {
-            ShaderProgram.SetBool("hasTangents", true);
-        }
-        else
-        {
-            ShaderProgram.SetBool("hasTangents", false);
-        }
+        ShaderProgram.SetBool("hasTangents", mesh.HasTangents);
         Matrix4 model = mesh.ParentPart.Transformation;
         ShaderProgram.SetMatrix4("model", ref model);
         Matrix3 normal = mesh.ParentPart.NormalMatrix();

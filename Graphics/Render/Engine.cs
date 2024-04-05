@@ -68,7 +68,7 @@ public class Engine
         {
             UseDeferredRendering = false,
             UseClusteredForwardRendering = true,
-            UseForwardRendering = true,
+            UseForwardRendering = false,
             UseDebugRendering = false,
             UseOrthographic = false,
             MaximumLights = 100,
@@ -149,6 +149,7 @@ public class Engine
             mesh.Load();
         }
         Window.Resize += Window_Resize;
+        ShaderHandler = new(Config.Settings.ShaderPath);
         GraphicsUtil.LoadDebugger();
         ScriptLoader.LoadAllScripts(this);
         ForwardRendering forwardRendering = new(this)
@@ -160,6 +161,7 @@ public class Engine
             IsEnabled = EngineSettings.UseClusteredForwardRendering
         };
         RenderPasses.Add(forwardRendering);
+        RenderPasses.Add(clusteredForwardRendering);
         // If a texture is non-existing or invalid, use this instead.
         TextureEntries.AddTexture(TextureHelper.GenerateTextureNotFound());
         GL.ClearColor(
@@ -206,7 +208,6 @@ public class Engine
                 EngineSettings.DepthFar
                 );
         }
-        ShaderHandler = new(Config.Settings.ShaderPath);
         ShaderProgram screenFBOShader = new(ShaderHandler, "ScreenFBO", "screen");
         Screen = new(screenFBOShader, Window.ClientSize);
         Screen.Load();

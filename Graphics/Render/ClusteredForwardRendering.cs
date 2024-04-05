@@ -22,7 +22,7 @@ public class ClusteredForwardRendering : IRenderPass
             return;
         }
         AABBShader = new ComputeShader(Engine.ShaderHandler, "ClusterAABB", "clusterAABB");
-        ClusterShader = new ComputeShader(Engine.ShaderHandler, "Cluster", "cluster");
+        ClusterShader = new ComputeShader(Engine.ShaderHandler, "Cluster", "clusterCullLight");
     }
 
     /// <summary>Loads the renderer.</summary>

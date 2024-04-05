@@ -59,8 +59,6 @@ struct Light
 	float range;
 	vec3  color;
 };
-#define NR_LIGHTS 100 // TODO: Use SSBO instead for point light array.
-uniform Light pointLights[NR_LIGHTS];
 
 struct DirectionalLight
 {
@@ -103,7 +101,34 @@ layout (std430, binding = 5) buffer lightGridSSBO
 };
 // =====================================
 
+// ========= Helpers ===========
 const float PI = 3.14159265359;
+
+// Linearize the depth value
+float linearDepth(float depthSample)
+{
+    float depthRange = 2.0 * depthSample - 1.0;
+    return 2.0 * zNear * zFar / (zFar + zNear - depthRange * (zFar - zNear));
+}
+
+// Get a normal from the normal map
+vec3 GetNormalFromMap()
+{
+    vec3 tangentNormal = texture(material.normalMap, fs_in.TexCoords).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(fs_in.FragPos);
+    vec3 Q2  = dFdy(fs_in.FragPos);
+    vec2 st1 = dFdx(fs_in.TexCoords);
+    vec2 st2 = dFdy(fs_in.TexCoords);
+
+    vec3 N   = normalize(fs_in.Normal);
+    vec3 T   = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B   = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
+}
+// =============================
 
 // ========= PBR Methods =============
 // D = Normal Distribution Function
@@ -163,33 +188,6 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 // ===================================
-
-// ========= Helpers ===========
-// Linearize the depth value
-float linearDepth(float depthSample)
-{
-    float depthRange = 2.0 * depthSample - 1.0;
-    return 2.0 * zNear * zFar / (zFar + zNear - depthRange * (zFar - zNear));
-}
-
-// Get a normal from the normal map
-vec3 GetNormalFromMap()
-{
-    vec3 tangentNormal = texture(material.normalMap, fs_in.TexCoords).xyz * 2.0 - 1.0;
-
-    vec3 Q1  = dFdx(fs_in.FragPos);
-    vec3 Q2  = dFdy(fs_in.FragPos);
-    vec2 st1 = dFdx(fs_in.TexCoords);
-    vec2 st2 = dFdy(fs_in.TexCoords);
-
-    vec3 N   = normalize(fs_in.Normal);
-    vec3 T   = normalize(Q1*st2.t - Q2*st1.t);
-    vec3 B   = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
-
-    return normalize(TBN * tangentNormal);
-}
-// =============================
 
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float rough, float metal, vec3 F0);
 vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float roughness, float metallic, vec3 F0);
