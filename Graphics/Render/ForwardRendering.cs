@@ -78,50 +78,43 @@ public class ForwardRendering : IRenderPass
         {
             throw new NullReferenceException("Directional light is not set.");
         }
-
-        foreach (Model model in Engine.Models)
+        foreach (IMesh mesh in Engine.Meshes)
         {
-            foreach (ModelPart modelPart in model.Parts)
+            if (!mesh.IsLoaded)
             {
-                foreach (IMesh mesh in modelPart.Meshes)
+                mesh.Load();
+                continue;
+            }
+            if (mesh.Material is null) continue;
+            if (!mesh.Material.HasBeenBuilt)
+            {
+                mesh.Material.Build(Engine);
+                mesh.Material.HasBeenBuilt = true;
+            }
+            mesh.Material.Use(mesh);
+            // TODO: Use SSBO for light data
+            if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit && mesh.Material.ShaderProgram != null)
+            {
+                mesh.Material.ShaderProgram.SetVector3("dirLight.direction", ref Engine.DirectionalLight.Position);
+                mesh.Material.ShaderProgram.SetVector3("dirLight.color", ref Engine.DirectionalLight.LightData.Color);
+                mesh.Material.ShaderProgram.SetFloat("dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
+                int pntLightI = 0;
+                for (int i = 0; i < Engine.EngineSettings.MaximumLights; i++)
                 {
-                    if (!mesh.IsLoaded)
+                    Light light = Engine.Lights[i];
+                    if (light is PointLight pbrPointLight)
                     {
-                        mesh.Load();
-                        continue;
+                        mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].position", ref pbrPointLight.Position);
+                        mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].color", ref pbrPointLight.LightData.Color);
+                        mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].intensity", ref pbrPointLight.LightData.Intensity);
+                        mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].range", ref pbrPointLight.LightData.Range);
+                        pntLightI++;
                     }
-                    if (mesh.Material is null) continue;
-                    if (!mesh.Material.HasBeenBuilt)
-                    {
-                        mesh.Material.Build(Engine);
-                        mesh.Material.HasBeenBuilt = true;
-                    }
-                    mesh.Material.Use(mesh);
-                    // TODO: Use SSBO for light data
-                    if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit && mesh.Material.ShaderProgram != null)
-                    {
-                        mesh.Material.ShaderProgram.SetVector3("dirLight.direction", ref Engine.DirectionalLight.Position);
-                        mesh.Material.ShaderProgram.SetVector3("dirLight.color", ref Engine.DirectionalLight.LightData.Color);
-                        mesh.Material.ShaderProgram.SetFloat("dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
-                        int pntLightI = 0;
-                        for (int i = 0; i < Engine.EngineSettings.MaximumLights; i++)
-                        {
-                            Light light = Engine.Lights[i];
-                            if (light is PointLight pbrPointLight)
-                            {
-                                mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].position", ref pbrPointLight.Position);
-                                mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].color", ref pbrPointLight.LightData.Color);
-                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].intensity", ref pbrPointLight.LightData.Intensity);
-                                mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].range", ref pbrPointLight.LightData.Range);
-                                pntLightI++;
-                            }
-                        }
-                    }
-                    mesh.Render();
                 }
             }
+            mesh.Render();
         }
-        foreach (TerrainMesh terrainMesh in Engine.TerrainMeshes)
+        foreach (TerrainMesh terrainMesh in Engine.TerrainMeshes) // TODO: Add this mesh to engine.
         {
             _terrainShader?.Use();
             Matrix4 translation = terrainMesh.Translation;

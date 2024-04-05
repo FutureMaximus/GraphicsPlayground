@@ -28,9 +28,13 @@ public class Engine
     public Matrix4 ClusteredRenderProjection;
     public Matrix4 Orthographic;
     public Settings EngineSettings;
+    /// <summary> Render passes that the engine will render. </summary>
     public readonly List<IRenderPass> RenderPasses = [];
+    /// <summary> Models known to the engine. </summary>
     public readonly List<Model> Models = [];
-    public readonly List<TerrainMesh> TerrainMeshes = []; // TODO: Move to models.
+    /// <summary> Meshes the engine will render. </summary>
+    public readonly List<IMesh> Meshes = [];
+    public readonly List<TerrainMesh> TerrainMeshes = []; // TODO: Move to meshes.
     /// <summary> Streamed assets that may have tasks to be ran on the main thread </summary>
     public readonly ConcurrentStack<IAssetHolder> StreamedAssets = new();
     public readonly AssetStreamer AssetStreamer;
@@ -137,20 +141,14 @@ public class Engine
         {
             throw new Exception("Window is null.");
         }
-        foreach (Model model in Models)
+        foreach (IMesh mesh in Meshes)
         {
-            foreach (ModelPart modelPart in model.Parts)
+            if (mesh.Material is not null)
             {
-                foreach (IMesh mesh in modelPart.Meshes)
-                {
-                    if (mesh.Material is not null)
-                    {
-                        mesh.Material.Build(this);
-                        mesh.Material.HasBeenBuilt = true;
-                    }
-                    mesh.Load();
-                }
+                mesh.Material.Build(this);
+                mesh.Material.HasBeenBuilt = true;
             }
+            mesh.Load();
         }
         Window.Resize += Window_Resize;
         GraphicsUtil.LoadDebugger();
@@ -365,6 +363,10 @@ public class Engine
         foreach (IScript script in Scripts)
         {
             script.OnUnload();
+        }
+        foreach (IMesh mesh in Meshes)
+        {
+            mesh.Dispose();
         }
         foreach (IRenderPass renderPass in RenderPasses)
         {

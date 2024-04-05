@@ -107,8 +107,7 @@ public static class GlobalShaderData
                 {
                     Position = pointLight.Position,
                     Range = lightData.Range,
-                    Color = lightData.Color,
-                    Intensity = lightData.Intensity
+                    Color = lightData.Color
                 };
                 Marshal.StructureToPtr(gpuPointLightData, lightBufferPtr + Marshal.SizeOf(typeof(GPUPointLightData)) * pointLightIndex, false);
                 pointLightIndex++;
@@ -158,13 +157,9 @@ public static class GlobalShaderData
     public static void UpdateProjViewUBO(ref ProjViewUniform projViewUniform)
     {
         GL.BindBuffer(BufferTarget.UniformBuffer, ProjViewUBO);
-        IntPtr ptr = GL.MapBuffer(BufferTarget.UniformBuffer, BufferAccess.WriteOnly);
-        if (ptr == IntPtr.Zero)
-        {
-            throw new Exception("Failed to map ProjViewUBO buffer.");
-        }
-        Marshal.StructureToPtr(projViewUniform, ptr, false);
-        GL.UnmapBuffer(BufferTarget.UniformBuffer);
+        GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, Unsafe.SizeOf<Matrix4>(), ref projViewUniform.Projection);
+        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>(), Unsafe.SizeOf<Matrix4>(), ref projViewUniform.View);
+        GL.BufferSubData(BufferTarget.UniformBuffer, Unsafe.SizeOf<Matrix4>() * 2, Unsafe.SizeOf<Vector3>(), ref projViewUniform.ViewPos);
         GraphicsUtil.CheckError("UBO 0 (ProjView) Error");
         GL.BindBuffer(BufferTarget.UniformBuffer, 0);
     }

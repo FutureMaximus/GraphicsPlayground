@@ -1,4 +1,8 @@
-﻿using GraphicsPlayground.Graphics.Shaders;
+﻿using GraphicsPlayground.Graphics.Lighting;
+using GraphicsPlayground.Graphics.Lighting.Lights;
+using GraphicsPlayground.Graphics.Materials;
+using GraphicsPlayground.Graphics.Models;
+using GraphicsPlayground.Graphics.Shaders;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GraphicsPlayground.Graphics.Render;
@@ -46,7 +50,31 @@ public class ClusteredForwardRendering : IRenderPass
         ShaderProgram.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
         ShaderProgram.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
         GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);
-
+        ClusterShader.Use();
+        GL.DispatchCompute(1, 1, 6);
+        foreach (IMesh mesh in Engine.Meshes)
+        {
+            if (!mesh.IsLoaded)
+            {
+                mesh.Load();
+                continue;
+            }
+            if (mesh.Material is null) continue;
+            if (!mesh.Material.HasBeenBuilt)
+            {
+                mesh.Material.Build(Engine);
+                mesh.Material.HasBeenBuilt = true;
+            }
+            mesh.Material.Use(mesh);
+            // TODO: Use SSBO for light data
+            if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit && mesh.Material.ShaderProgram != null)
+            {
+                mesh.Material.ShaderProgram.SetVector3("dirLight.direction", ref Engine.DirectionalLight.Position); // TODO: Add to global light data
+                mesh.Material.ShaderProgram.SetVector3("dirLight.color", ref Engine.DirectionalLight.LightData.Color);
+                mesh.Material.ShaderProgram.SetFloat("dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
+            }
+            mesh.Render();
+        }
     }
 
     public void Dispose()

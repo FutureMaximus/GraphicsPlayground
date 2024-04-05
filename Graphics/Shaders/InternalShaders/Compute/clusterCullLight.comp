@@ -7,7 +7,6 @@ struct PointLight
 	vec4  position;
     float range;
     vec3  color;
-    float intensity;
 };
 
 struct LightGrid

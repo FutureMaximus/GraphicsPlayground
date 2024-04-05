@@ -68,7 +68,8 @@ public class TestScript : IScript
         donutPart.Meshes.Add(donutMesh);
         model.Parts.Add(spherePart);
         model.Parts.Add(donutPart);
-        engine.Models.Add(model);
+        engine.Meshes.Add(sphereMesh);
+        engine.Meshes.Add(donutMesh);
 
         WorldSettings settings = new()
         {

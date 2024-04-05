@@ -20,7 +20,7 @@ internal class AnimationTest : IScript
             Name = "AnimationTest",
             Path = "C:\\BlenderModels\\AnimationTest",
             ModelFile = "AnimationTest.obj",
-            TexturePath = "Models/AnimationTest/AnimationTest.png"
+            TexturePath = "Meshes/AnimationTest/AnimationTest.png"
         };
         ModelLoader.ProcessModel(entry, engine.AssetStreamer);*/
     }
