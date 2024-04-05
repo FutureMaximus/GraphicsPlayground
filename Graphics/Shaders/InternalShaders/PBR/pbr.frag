@@ -55,7 +55,6 @@ struct Light
 	vec3  position;
 	float range;
 	vec3  color;
-	float intensity;
 };
 #define NR_LIGHTS 100 // TODO: Use SSBO instead for point light array.
 uniform Light pointLights[NR_LIGHTS];

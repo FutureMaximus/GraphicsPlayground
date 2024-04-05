@@ -97,7 +97,6 @@ public class ForwardRendering : IRenderPass
             {
                 mesh.Material.ShaderProgram.SetVector3("dirLight.direction", ref Engine.DirectionalLight.Position);
                 mesh.Material.ShaderProgram.SetVector3("dirLight.color", ref Engine.DirectionalLight.LightData.Color);
-                mesh.Material.ShaderProgram.SetFloat("dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
                 int pntLightI = 0;
                 for (int i = 0; i < Engine.EngineSettings.MaximumLights; i++)
                 {
@@ -106,7 +105,6 @@ public class ForwardRendering : IRenderPass
                     {
                         mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].position", ref pbrPointLight.Position);
                         mesh.Material.ShaderProgram.SetVector3($"pointLights[{pntLightI}].color", ref pbrPointLight.LightData.Color);
-                        mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].intensity", ref pbrPointLight.LightData.Intensity);
                         mesh.Material.ShaderProgram.SetFloat($"pointLights[{pntLightI}].range", ref pbrPointLight.LightData.Range);
                         pntLightI++;
                     }

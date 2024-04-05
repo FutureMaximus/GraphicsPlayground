@@ -58,7 +58,6 @@ struct Light
 	vec3  position;
 	float range;
 	vec3  color;
-	float intensity;
 };
 #define NR_LIGHTS 100 // TODO: Use SSBO instead for point light array.
 uniform Light pointLights[NR_LIGHTS];
@@ -307,8 +306,6 @@ vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, floa
 	// Inverse square law attenuation for control over the light's falloff.
 	float dist = length(light.position - fragPos);
 	float attenuation = pow(clamp(1 - pow((dist / light.range), 4.0), 0.0, 1.0), 2.0)/(1.0  + (dist * dist));
-	// Intensity to control the brightness of the light
-	//attenuation *= light.intensity;
 	vec3  radiance = light.color * attenuation;
 
 	float NDF = D_GGX(N, H, rough);

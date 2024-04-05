@@ -91,7 +91,6 @@ public class Engine
             PBRLightData newLightData = new()
             {
                 Color = randColor,
-                Intensity = 5f,
                 Range = 10000f,
                 Enabled = false
             };
@@ -106,7 +105,6 @@ public class Engine
         PBRLightData lightData = new()
         {
             Color = new Vector3(1.0f, 1.0f, 1.0f),
-            Intensity = 10.0f,
         };
         DirectionalLight directionalLight = new(new Vector3(0.5f, 1.0f, 0.0f), lightData);
         DirectionalLight = directionalLight;

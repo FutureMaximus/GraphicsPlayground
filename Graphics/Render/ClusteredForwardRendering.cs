@@ -69,9 +69,10 @@ public class ClusteredForwardRendering : IRenderPass
             // TODO: Use SSBO for light data
             if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit && mesh.Material.ShaderProgram != null)
             {
+                mesh.Material.ShaderProgram.SetFloat("zNear", Engine.EngineSettings.ClusteredDepthNear);
+                mesh.Material.ShaderProgram.SetFloat("zFar", Engine.EngineSettings.ClusteredDepthFar);
                 mesh.Material.ShaderProgram.SetVector3("dirLight.direction", ref Engine.DirectionalLight.Position); // TODO: Add to global light data
                 mesh.Material.ShaderProgram.SetVector3("dirLight.color", ref Engine.DirectionalLight.LightData.Color);
-                mesh.Material.ShaderProgram.SetFloat("dirLight.intensity", ref Engine.DirectionalLight.LightData.Intensity);
             }
             mesh.Render();
         }
