@@ -4,6 +4,7 @@ Rendering Checklist:
 - [X] PBR Material Support
 - [X] Point Lights
 - [X] Directional Lighting
+- [X] Clustered Forward Rendering
 - [ ] PBR approximation for lower-end devices
 - [ ] Image Based Lighting
 - [ ] Spot Lights
@@ -17,7 +18,6 @@ Rendering Checklist:
 - [ ] MAYBE: Global Illumination
 - [ ] OIT Ordered Transparency
 - [ ] MAYBE: Displacement
-- [ ] Clustered Forward Rendering
 - [ ] Area Lights
 - [ ] Rain simulation
 - [ ] SSR
