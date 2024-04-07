@@ -1,4 +1,5 @@
 ﻿using Assimp;
+using GraphicsPlayground.Util;
 
 namespace GraphicsPlayground.Graphics.Animations;
 
@@ -10,7 +11,8 @@ public static class AnimationHandler
     {
         if (Animations.ContainsKey(animationToLoad.Name))
         {
-            throw new ArgumentException($"Animation with name {animationToLoad.Name} already exists.");
+            DebugLogger.Log($"Animation with name {animationToLoad.Name} already exists.");
+            return;
         }
 
         Animation animation = new(animationToLoad, scene, boneInfo, boneInfoCount);

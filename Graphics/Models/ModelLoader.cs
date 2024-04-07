@@ -1,10 +1,11 @@
 ﻿using Assimp;
 using OpenTK.Mathematics;
-using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Graphics.Animations;
+using GraphicsPlayground.Graphics.Materials;
+using GraphicsPlayground.Graphics.Shaders.Data;
 
 namespace GraphicsPlayground.Graphics.Models;
 
@@ -278,19 +279,19 @@ public static class ModelLoader
             DebugLogger.Log($"Mesh {mesh.Name} in model {modelEntry.Name} does not have a material.");
             return null;
         }
-        Material material = scene.Materials[mesh.MaterialIndex];
+        Assimp.Material material = scene.Materials[mesh.MaterialIndex];
 
-        // 1. Albedo maps
+        // Albedo maps
         List<Texture2D> albedoMaps = LoadMaterialTextures(material, TextureType.Diffuse, modelEntry, assetStreamer, mesh);
 
-        // 2. Normal maps
+        // Normal maps
         List<Texture2D> normalMaps = LoadMaterialTextures(material, TextureType.Normals, modelEntry, assetStreamer, mesh);
 
-        // 3. ARM maps (Ambient Occlusion, Roughness, Metallic)
+        // ARM maps (Ambient Occlusion, Roughness, Metallic) // TODO: Do metallic, roughness, and ambient occlusion textures check first before ARM.
         List<Texture2D> armMaps = LoadMaterialTextures(material, TextureType.Unknown, modelEntry, assetStreamer, mesh);
 
-        // 4. Height maps (Optional)
-        List<Texture2D> heightMaps = LoadMaterialTextures(material, TextureType.Height, modelEntry, assetStreamer, mesh);
+        // Height maps (Optional) // TODO: Displacement mapping to support height maps.
+        //List<Texture2D> heightMaps = LoadMaterialTextures(material, TextureType.Height, modelEntry, assetStreamer, mesh);
 
         Texture2D albedoTexture;
         try
@@ -321,25 +322,14 @@ public static class ModelLoader
             throw new AssimpException($"Mesh {mesh.Name} in model {modelEntry.Name} does not have an ARM texture.");
         }
 
-        Texture2D? heightMap = heightMaps.Count > 0 ? heightMaps[0] : null;
+        //Texture2D? heightMap = heightMaps.Count > 0 ? heightMaps[0] : null;
 
-        PBRMaterialData meshMaterial = new(albedoTexture, normalTexture, armTexture);
-        if (heightMap is not null)
+        PBRMaterial pbrMaterial = new(mesh.Name)
         {
-            meshMaterial.HeightTexture = heightMap;
-        }
-        GenericMeshShaderData meshShaderData = new(meshMaterial); 
-
-        GenericMesh modelMesh = new(mesh.Name, modelPart)
-        {
-            ShaderData = meshShaderData,
-            Vertices = positions,
-            TextureCoords = textureCoords,
-            Normals = normals,
-            Tangents = tangents,
-            Indices = indices
+            Albedo = albedoTexture,
+            Normal = normalTexture,
+            ARM = armTexture
         };
-
         if (meshType == typeof(SkeletalMesh))
         {
             List<int> boneIDs = [];
@@ -356,7 +346,7 @@ public static class ModelLoader
 
             SkeletalMesh skeletalMesh = new(mesh.Name, modelPart)
             {
-                ShaderData = meshShaderData,
+                ShaderData = new GenericMeshShaderData(),
                 Vertices = positions,
                 TextureCoords = textureCoords,
                 Normals = normals,
@@ -373,10 +363,20 @@ public static class ModelLoader
             return skeletalMesh;
         }
 
+        GenericMesh modelMesh = new(mesh.Name, modelPart)
+        {
+            ShaderData = new GenericMeshShaderData(),
+            Vertices = positions,
+            TextureCoords = textureCoords,
+            Normals = normals,
+            Tangents = tangents,
+            Indices = indices
+        };
+
         return modelMesh;
     }
 
-    private static List<Texture2D> LoadMaterialTextures(Material mat, TextureType type, ModelEntry modelEntry, AssetStreamer assetStreamer, Assimp.Mesh mesh)
+    private static List<Texture2D> LoadMaterialTextures(Assimp.Material mat, TextureType type, ModelEntry modelEntry, AssetStreamer assetStreamer, Assimp.Mesh mesh)
     {
         List<Texture2D> loadedTextures = [];
         for (int i = 0; i < mat.GetMaterialTextureCount(type); i++)

@@ -53,7 +53,7 @@ uniform bool hasTangents; // TODO: Remove this.
 uniform float zNear;
 uniform float zFar;
 
-struct Light
+struct PointLight
 {
 	vec3  position;
 	float range;
@@ -87,7 +87,7 @@ layout (std430, binding = 2) buffer screenToView
 
 layout (std430, binding = 3) buffer lightSSBO
 {
-    Light pointLight[];
+    PointLight pointLights[];
 };
 
 layout (std430, binding = 4) buffer lightIndexSSBO
@@ -190,7 +190,12 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 // ===================================
 
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float rough, float metal, vec3 F0);
-vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float roughness, float metallic, vec3 F0);
+vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float roughness, float metallic, vec3 F0);
+
+vec3 colors[8] = vec3[](
+   vec3(0, 0, 0),    vec3( 0,  0,  1), vec3( 0, 1, 0),  vec3(0, 1,  1),
+   vec3(1,  0,  0),  vec3( 1,  0,  1), vec3( 1, 1, 0),  vec3(1, 1, 1)
+);
 
 void main()
 {
@@ -253,7 +258,8 @@ void main()
     uint lightIndexOffset = lightGrid[tileIndex].offset;
 	for (uint i = 0; i < lightCount; i++)
 	{
-		Lo += CalcPointLight(pointLight[ globalLightIndexList[lightIndexOffset + i] ], N, V, fs_in.FragPos, albedo, roughness, metallic, F0);
+		uint lightIndex = globalLightIndexList[lightIndexOffset + i];
+		Lo += CalcPointLight(pointLights[lightIndex], N, V, fs_in.FragPos, albedo, roughness, metallic, F0);
 	}
 	// TODO: Spot lights
 
@@ -269,6 +275,7 @@ void main()
 	color = pow(color, vec3(1.0 / 2.2));
 
 	FragColor = vec4(color, 1.0);
+	//FragColor = vec4(colors[uint(mod(zTile, 8.0f))], 1.0);
 }
 
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float rough, float metal, vec3 F0)
@@ -297,14 +304,14 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 N, vec3 V, vec3 fragPos, 
 	return (kD * albedo / PI + specular) * radiance * NdotL;
 }
 
-vec3 CalcPointLight(Light light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float rough, float metal, vec3 F0)
+vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo, float rough, float metal, vec3 F0)
 {
 	vec3 L = normalize(light.position - fs_in.FragPos);
 	vec3 H = normalize(V + L);
 	// Inverse square law attenuation for control over the light's falloff.
 	float dist = length(light.position - fragPos);
 	float attenuation = pow(clamp(1 - pow((dist / light.range), 4.0), 0.0, 1.0), 2.0)/(1.0  + (dist * dist));
-	vec3  radiance = light.color * attenuation;
+	vec3  radiance = (light.color * 100) * attenuation;
 
 	float NDF = D_GGX(N, H, rough);
 	float G = G_Smith(N, V, L, rough);

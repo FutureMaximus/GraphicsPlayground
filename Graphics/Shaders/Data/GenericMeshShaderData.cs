@@ -1,15 +1,13 @@
 ﻿namespace GraphicsPlayground.Graphics.Shaders.Data;
 
-///<summary>ShaderProgram data for a generic mesh.</summary>
+///<summary>Shader data for a generic mesh this is not material data.</summary>
 public struct GenericMeshShaderData : IShaderData
 {
     public readonly string Name => nameof(GenericMeshShaderData);
-    public PBRMaterialData MaterialData;
     public OutlineData OutlineData;
 
-    public GenericMeshShaderData(PBRMaterialData materialData, OutlineData? outlineData = null)
+    public GenericMeshShaderData(OutlineData? outlineData = null)
     {
-        MaterialData = materialData;
         if (outlineData.HasValue)
         {
             OutlineData = outlineData.Value;

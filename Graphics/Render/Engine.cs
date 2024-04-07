@@ -91,10 +91,10 @@ public class Engine
             PBRLightData newLightData = new()
             {
                 Color = randColor,
-                Range = 10000f,
+                Range = 65f,
                 Enabled = false
             };
-            float range = 100;
+            float range = 2000;
             Vector3 randLoc = new(
                               (float)rand.NextDouble() * range - 50,
                               (float)rand.NextDouble() * range - 50,
@@ -280,6 +280,7 @@ public class Engine
             );
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         GL.Enable(EnableCap.DepthTest);
+        GL.Enable(EnableCap.CullFace);
         //GL.Enable(EnableCap.CullFace);
         //GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 

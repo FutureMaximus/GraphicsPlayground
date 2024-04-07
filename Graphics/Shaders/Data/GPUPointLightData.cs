@@ -14,5 +14,4 @@ public struct GPUPointLightData
     public Vector3 Position;
     public float Range;
     public Vector3 Color;
-    public float Intensity;
 }

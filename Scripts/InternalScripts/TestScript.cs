@@ -21,12 +21,21 @@ public class TestScript : IScript
 
     void IScript.OnLoad(Engine engine)
     {
+        /*ModelLoader.ModelEntry entry = new()
+        {
+            Name = "Sponza",
+            Path = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Data\\Main.1_Sponza",
+            ModelFile = "NewSponza_Main_glTF_002",
+            TexturePath = "C:\\Users\\ruben\\source\\repos\\GraphicsPlayground\\Data\\Main.1_Sponza\\textures"
+        };
+        ModelLoader.ProcessModel(entry, engine.AssetStreamer);*/
+
         Model model = new("model");
         ModelPart spherePart = new("Sphere Part", model)
         {
             LocalTransformation = new()
             {
-                Position = new(0f, 0f, 20f),
+                Position = new(0f, 0f, -20f),
                 Scale = new(1f, 1f, 1f)
             }
         };

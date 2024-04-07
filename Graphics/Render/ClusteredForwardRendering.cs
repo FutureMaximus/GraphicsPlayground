@@ -12,7 +12,7 @@ public class ClusteredForwardRendering : IRenderPass
     public bool IsEnabled { get; set; }
     public Engine Engine;
     public ComputeShader? AABBShader;
-    public ComputeShader? ClusterShader;
+    public ComputeShader? LightCullShader;
 
     public ClusteredForwardRendering(Engine engine)
     {
@@ -22,13 +22,13 @@ public class ClusteredForwardRendering : IRenderPass
             return;
         }
         AABBShader = new ComputeShader(Engine.ShaderHandler, "ClusterAABB", "clusterAABB");
-        ClusterShader = new ComputeShader(Engine.ShaderHandler, "Cluster", "clusterCullLight");
+        LightCullShader = new ComputeShader(Engine.ShaderHandler, "Cluster", "clusterCullLight");
     }
 
     /// <summary>Loads the renderer.</summary>
     public void Load()
     {
-        if (AABBShader == null || ClusterShader == null)
+        if (AABBShader == null || LightCullShader == null)
         {
             return;
         }
@@ -41,16 +41,16 @@ public class ClusteredForwardRendering : IRenderPass
     /// <summary>Updates the renderer.</summary>
     public void Render()
     {
-        if (AABBShader == null || ClusterShader == null)
+        if (AABBShader == null || LightCullShader == null)
         {
             return;
         }
         // This should be moved somewhere else that updates when needed but for now it's fine
-        AABBShader.Use();
+        /*AABBShader.Use();
         ShaderProgram.SetFloat(0, Engine.EngineSettings.ClusteredDepthNear);
         ShaderProgram.SetFloat(1, Engine.EngineSettings.ClusteredDepthFar);
-        GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);
-        ClusterShader.Use();
+        GL.DispatchCompute(GlobalShaderData.GRID_SIZE_X, GlobalShaderData.GRID_SIZE_Y, GlobalShaderData.GRID_SIZE_Z);*/
+        LightCullShader.Use();
         GL.DispatchCompute(1, 1, 6);
         foreach (IMesh mesh in Engine.Meshes)
         {
@@ -66,13 +66,13 @@ public class ClusteredForwardRendering : IRenderPass
                 mesh.Material.HasBeenBuilt = true;
             }
             mesh.Material.Use(mesh);
-            // TODO: Use SSBO for light data
             if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit && mesh.Material.ShaderProgram != null)
             {
                 mesh.Material.ShaderProgram.SetFloat("zNear", Engine.EngineSettings.ClusteredDepthNear);
                 mesh.Material.ShaderProgram.SetFloat("zFar", Engine.EngineSettings.ClusteredDepthFar);
                 mesh.Material.ShaderProgram.SetVector3("dirLight.direction", ref Engine.DirectionalLight.Position); // TODO: Add to global light data
                 mesh.Material.ShaderProgram.SetVector3("dirLight.color", ref Engine.DirectionalLight.LightData.Color);
+                mesh.Material.ShaderProgram.SetFloat("dirLight.intensity", 2f);
             }
             mesh.Render();
         }
@@ -81,7 +81,7 @@ public class ClusteredForwardRendering : IRenderPass
     public void Dispose()
     {
         AABBShader?.Dispose();
-        ClusterShader?.Dispose();
+        LightCullShader?.Dispose();
         GC.SuppressFinalize(this);
     }
 }

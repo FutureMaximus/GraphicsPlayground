@@ -28,10 +28,10 @@ public static class GlobalShaderData
     public static int LightIndexGlobalCountSSBO { get; private set; }
 
     public static readonly uint GRID_SIZE_X = 16;
-    public static readonly uint GRID_SIZE_Y = 9;
+    public static readonly uint GRID_SIZE_Y = 8;
     public static readonly uint GRID_SIZE_Z = 24;
     public static readonly uint GRID_SIZE = GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z;
-    public const uint MAX_LIGHTS_PER_CLUSTER = 50;
+    public const uint MAX_LIGHTS_PER_CLUSTER = 100;
 
     public static void LoadBuffers(Engine engine)
     {
@@ -68,14 +68,15 @@ public static class GlobalShaderData
 
         // Screen2View SSBO
         // 64 bytes for inverse projection, 16 bytes for tile sizes, 8 bytes for screen size, 4 bytes for slice scaling factor, 4 bytes for slice bias factor.
-        int sizeX = (int)Math.Ceiling(engine.Window.ClientSize.X / (float)GRID_SIZE_X);
+        int sizeX = (int)MathF.Ceiling(engine.Window.ClientSize.X / (float)GRID_SIZE_X);
         Screen2View screen2View;
-        screen2View.InverseProjection = Matrix4.Invert(engine.ClusteredRenderProjection);
+        screen2View.InverseProjection = engine.Projection.Inverted();
         screen2View.TileSizes = new Vector4i((int)GRID_SIZE_X, (int)GRID_SIZE_Y, (int)GRID_SIZE_Z, sizeX);
         screen2View.ScreenSize = new Vector2i(engine.Window.ClientSize.X, engine.Window.ClientSize.Y);
-        screen2View.SliceScalingFactor = GRID_SIZE_Z / MathF.Log2(engine.EngineSettings.ClusteredDepthFar / engine.EngineSettings.ClusteredDepthNear);
-        screen2View.SliceBiasFactor = -(GRID_SIZE_Z * MathF.Log2(
-            engine.EngineSettings.ClusteredDepthNear) / MathF.Log2(engine.EngineSettings.ClusteredDepthFar / engine.EngineSettings.ClusteredDepthNear));
+        float depthFar = engine.EngineSettings.DepthFar;
+        float depthNear = engine.EngineSettings.DepthNear;
+        screen2View.SliceScalingFactor = GRID_SIZE_Z / MathF.Log2(depthFar / depthNear);
+        screen2View.SliceBiasFactor = -(GRID_SIZE_Z * MathF.Log2(depthNear) / MathF.Log2(depthFar / depthNear));
         Screen2ViewSSBO = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, Screen2ViewSSBO);
         GL.BufferData(BufferTarget.ShaderStorageBuffer, Unsafe.SizeOf<Screen2View>(), ref screen2View, BufferUsageHint.StaticCopy);

@@ -16,13 +16,6 @@ layout(local_size_x = 1, local_size_y = 1) in;
 layout(location = 0) uniform float zNear; // Near plane distance.
 layout(location = 1) uniform float zFar; // Far plane distance.
 
-// Output
-struct Cluster // A cluster volume is represented using an AABB we use vec4s for memory alignment.
-{
-	vec4 minPoint; // Minimum point of the cluster in world space.
-	vec4 maxPoint; // Maximum point of the cluster in world space.
-};
-
 // SSBO (Shader Storage Buffer Object) initialization
 struct VolumeTileAABB
 {
