@@ -3,5 +3,6 @@
 public enum MaterialShadingModel
 {
     Unlit,
-    DefaultLit
+    DefaultLit,
+    CustomLit
 }

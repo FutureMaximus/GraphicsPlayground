@@ -9,7 +9,7 @@ using System.Text;
 
 namespace GraphicsPlayground.Graphics.Materials;
 
-///<summary> A standard physically based rendering material. </summary>
+///<summary> A standard physically based rendering material for opaque meshes. </summary>
 public class PBRMaterial(string name) : Material(name)
 {
     ///<summary> 
@@ -44,7 +44,7 @@ public class PBRMaterial(string name) : Material(name)
     {
         if (ShaderProgram == null)
         {
-            throw new Exception("Material must be built and have a shader before use.");
+            throw new Exception("ParentMaterial must be built and have a shader before use.");
         }
         ShaderProgram.Use();
         foreach (MaterialProperty property in Properties)

@@ -31,7 +31,7 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
     public BufferUsageHint MeshUsageHint => BufferUsageHint.DynamicDraw;
     /// <summary> Shader data for rendering the mesh. </summary>
     public IShaderData ShaderData { get; set; } = new GenericMeshShaderData(); // TODO: SkeletalMeshShaderData?
-    /// <summary> Material to render for this mesh. </summary>
+    /// <summary> ParentMaterial to render for this mesh. </summary>
     public Material? Material { get; set; }
 
     // ====== Mesh Data ======
