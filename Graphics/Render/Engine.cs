@@ -268,7 +268,7 @@ public class Engine
         // ============= UBO (Global ShaderProgram Data) =============
         ProjViewUniform projViewUniform = new(Projection, Camera.View, Camera.Position);
         GlobalShaderData.UpdateProjViewUBO(ref projViewUniform);
-        // ====================================================
+        // ===========================================================
 
         // ============= Render ==============
         Screen?.Bind();

@@ -8,7 +8,7 @@ internal class AnimationTest : IScript
 {
     void IScript.OnLoad(Engine engine)
     {
-        /*Material pbrMat = new PBRMaterial("TestPBR")
+        /*ParentMaterial pbrMat = new PBRMaterial("TestPBR")
         {
             Albedo = new Vector3(1.0f, 0.0f, 0.0f),
             Metallic = 0.0f,

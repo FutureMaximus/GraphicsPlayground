@@ -1,6 +1,4 @@
-﻿using GraphicsPlayground.Graphics.Lighting;
-using GraphicsPlayground.Graphics.Lighting.Lights;
-using GraphicsPlayground.Graphics.Materials;
+﻿using GraphicsPlayground.Graphics.Materials;
 using GraphicsPlayground.Graphics.Models;
 using GraphicsPlayground.Graphics.Shaders;
 using OpenTK.Graphics.OpenGL4;
@@ -65,8 +63,9 @@ public class ClusteredForwardRendering : IRenderPass
                 mesh.Material.Build(Engine);
                 mesh.Material.HasBeenBuilt = true;
             }
+            if (mesh.Material.ShaderProgram is null) continue;
             mesh.Material.Use(mesh);
-            if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit && mesh.Material.ShaderProgram != null)
+            if (mesh.Material.ShadingModel == MaterialShadingModel.DefaultLit)
             {
                 mesh.Material.ShaderProgram.SetFloat("zNear", Engine.EngineSettings.ClusteredDepthNear);
                 mesh.Material.ShaderProgram.SetFloat("zFar", Engine.EngineSettings.ClusteredDepthFar);

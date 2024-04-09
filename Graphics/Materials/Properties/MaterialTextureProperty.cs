@@ -16,4 +16,6 @@ public class MaterialTextureProperty(string name, Texture2D texture, TextureUnit
         Texture.Use(TextureUnit);
         shaderProgram.SetInt(UniformName, TextureLocation);
     }
+
+    public override string TypeName => "Texture";
 }
