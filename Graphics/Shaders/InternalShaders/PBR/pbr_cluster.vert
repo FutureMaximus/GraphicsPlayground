@@ -3,7 +3,13 @@
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
+#ifdef SKELETAL_MESH
+layout (location = 3) in ivec4 aBoneIds;
+layout (location = 4) in vec4 aWeights;
+layout (location = 5) in vec3 aTangent;
+#else
 layout (location = 3) in vec3 aTangent;
+#endif
 
 layout (std140, binding = 0) uniform ProjView
 {
@@ -35,16 +41,16 @@ void main()
 	vec4 totalPosition = vec4(0.0f);
     for(int i = 0 ; i < MAX_BONE_INFLUENCE; i++)
     {
-        if(boneIds[i] == -1) 
+        if(aBoneIds[i] == -1)
             continue;
-        if(boneIds[i] >= MAX_BONES) 
+        if(aBoneIds[i] >= MAX_BONES) 
         {
-            totalPosition = vec4(pos, 1.0f);
+            totalPosition = vec4(aPosition, 1.0f);
             break;
         }
-        vec4 localPosition = vec4(aPosition, 1.0f) * finalBonesMatrices[boneIds[i]];
-        totalPosition += localPosition * weights[i];
-        vec3 localNormal = norm * mat3(finalBonesMatrices[boneIds[i]]);
+        vec4 localPosition = vec4(aPosition, 1.0f) * finalBonesMatrices[aBoneIds[i]];
+        totalPosition += localPosition * aWeights[i];
+        vec3 localNormal = norm * mat3(finalBonesMatrices[aBoneIds[i]]);
 	}
 	vec3 position = totalPosition.xyz;
 	#else
