@@ -51,8 +51,8 @@ void main()
 	#else
 	position = aPosition;
 	#endif
-	gl_Position = vec4(aPosition, 1.0) * model * view * projection;
-	vs_out.FragPos = vec3(vec4(aPosition, 1.0) * model);
+	gl_Position = vec4(position, 1.0) * model * view * projection;
+	vs_out.FragPos = vec3(vec4(position, 1.0) * model);
 	vec3 normal = normalize(aNormal * normalMatrix);
 	vs_out.Normal = normal;
 	vs_out.TexCoords = aTexCoords;
