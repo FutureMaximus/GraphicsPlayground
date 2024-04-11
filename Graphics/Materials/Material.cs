@@ -18,8 +18,6 @@ public abstract class Material(string name)
     public ShaderProgram? ShaderProgram;
     /// <summary> Uses the material and passes a reference of the material being used. </summary>
     public abstract void Use(in IMesh mesh);
-    /// <summary> Passes the engine reference and builds the material. </summary>
-    public abstract void Build(Engine engine);
     /// <summary> Whether the material has been built. </summary>
     public bool HasBeenBuilt = false;
     /// <summary> The shading model of the material. </summary>

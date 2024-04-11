@@ -58,101 +58,95 @@ public class PBRMaterial(string name) : Material(name)
         ShaderProgram.SetMatrix3("normalMatrix", ref normal);
     }
 
-    public override void Build(Engine engine)
+    /// <summary> Processes the material and builds the shader directives and properties. </summary>
+    public static void Process(PBRMaterial pbrMaterial, List<string> directives, StringBuilder sb)
     {
-        if (engine.ShaderHandler == null)
-        {
-            throw new Exception("Engine must have a shader handler to build materials.");
-        }
-
-        List<string> directives = [];
-
-        if (ARM != null)
+        if (pbrMaterial.ARM != null)
         {
             directives.Add("#define USING_ARM_MAP");
-            Properties.Add(new MaterialTextureProperty("material.armMap", ARM, TextureUnit.Texture4));
+            pbrMaterial.Properties.Add(new MaterialTextureProperty("material.armMap", pbrMaterial.ARM, TextureUnit.Texture4));
         }
         else
         {
-            if (Albedo == null)
+            if (pbrMaterial.Albedo == null)
             {
                 directives.Add("#define ALBEDO_VECTOR3");
-                Properties.Add(new MaterialVector3Property("material.albedo", new Vector3(0)));
+                pbrMaterial.Properties.Add(new MaterialVector3Property("material.albedo", new Vector3(0)));
             }
-            else if (Albedo.GetType() == typeof(Texture2D))
+            else if (pbrMaterial.Albedo.GetType() == typeof(Texture2D))
             {
-                Properties.Add(new MaterialTextureProperty("material.albedoMap", (Texture2D)Albedo, TextureUnit.Texture0));
+                pbrMaterial.Properties.Add(new MaterialTextureProperty("material.albedoMap", (Texture2D)pbrMaterial.Albedo, TextureUnit.Texture0));
             }
-            else if (Albedo.GetType() == typeof(Vector3))
+            else if (pbrMaterial.Albedo.GetType() == typeof(Vector3))
             {
                 directives.Add("#define ALBEDO_VECTOR3");
-                Properties.Add(new MaterialVector3Property("material.albedo", (Vector3)Albedo));
+                pbrMaterial.Properties.Add(new MaterialVector3Property("material.albedo", (Vector3)pbrMaterial.Albedo));
             }
             else
             {
                 throw new Exception("Albedo must be of type Texture2D or Vector3.");
             }
 
-            if (Normal != null)
+            if (pbrMaterial.Normal != null)
             {
-                Properties.Add(new MaterialTextureProperty("material.normalMap", Normal, TextureUnit.Texture1));
+                pbrMaterial.Properties.Add(new MaterialTextureProperty("material.normalMap", pbrMaterial.Normal, TextureUnit.Texture1));
             }
             else
             {
-                Properties.Add(new MaterialTextureProperty("material.normalMap", TextureHelper.GenerateNormalTexture(), TextureUnit.Texture1));
+                pbrMaterial.Properties.Add(new MaterialTextureProperty("material.normalMap", TextureHelper.GenerateNormalTexture(), TextureUnit.Texture1));
             }
 
-            if (Metallic == null)
+            if (pbrMaterial.Metallic == null)
             {
                 directives.Add("#define METALLIC_FLOAT");
-                Properties.Add(new MaterialFloatProperty("material.metallic", 0f));
+                pbrMaterial.Properties.Add(new MaterialFloatProperty("material.metallic", 0f));
             }
-            else if (Metallic.GetType() == typeof(Texture2D))
+            else if (pbrMaterial.Metallic.GetType() == typeof(Texture2D))
             {
-                Properties.Add(new MaterialTextureProperty("material.metallic", (Texture2D)Metallic, TextureUnit.Texture2));
+                pbrMaterial.Properties.Add(new MaterialTextureProperty("material.metallic", (Texture2D)pbrMaterial.Metallic, TextureUnit.Texture2));
             }
-            else if (Metallic.GetType() == typeof(float))
+            else if (pbrMaterial.Metallic.GetType() == typeof(float))
             {
                 directives.Add("#define METALLIC_FLOAT");
-                Properties.Add(new MaterialFloatProperty("material.metallic", (float)Metallic));
+                pbrMaterial.Properties.Add(new MaterialFloatProperty("material.metallic", (float)pbrMaterial.Metallic));
             }
             else
             {
                 throw new Exception("Metallic must be of type Texture2D or float.");
             }
 
-            if (Roughness == null)
+            if (pbrMaterial.Roughness == null)
             {
                 directives.Add("#define ROUGHNESS_FLOAT");
-                Properties.Add(new MaterialFloatProperty("material.roughness", 0f));
+                pbrMaterial.Properties.Add(new MaterialFloatProperty("material.roughness", 0f));
             }
-            else if (Roughness.GetType() == typeof(Texture2D))
+            else if (pbrMaterial.Roughness.GetType() == typeof(Texture2D))
             {
-                Properties.Add(new MaterialTextureProperty("material.roughness", (Texture2D)Roughness, TextureUnit.Texture3));
+                pbrMaterial.Properties.Add(new MaterialTextureProperty("material.roughness", (Texture2D)pbrMaterial.Roughness, TextureUnit.Texture3));
             }
-            else if (Roughness.GetType() == typeof(float))
+            else if (pbrMaterial.Roughness.GetType() == typeof(float))
             {
                 directives.Add("#define ROUGHNESS_FLOAT");
-                Properties.Add(new MaterialFloatProperty("material.roughness", (float)Roughness));
+                pbrMaterial.Properties.Add(new MaterialFloatProperty("material.roughness", (float)pbrMaterial.Roughness));
             }
             else
             {
                 throw new Exception("Roughness must be of type Texture2D or float.");
             }
 
-            if (AmbientOcclusion == null)
+            if (pbrMaterial.AmbientOcclusion == null)
             {
                 directives.Add("#define AMBIENT_OCCLUSION_FLOAT");
-                Properties.Add(new MaterialFloatProperty("material.ambientOcclusion", 0f));
+                pbrMaterial.Properties.Add(new MaterialFloatProperty("material.ambientOcclusion", 0f));
             }
-            else if (AmbientOcclusion.GetType() == typeof(Texture2D))
+            else if (pbrMaterial.AmbientOcclusion.GetType() == typeof(Texture2D))
             {
-                Properties.Add(new MaterialTextureProperty("material.ambientOcclusion", (Texture2D)AmbientOcclusion, TextureUnit.Texture4));
+                pbrMaterial.Properties.Add(new MaterialTextureProperty("material.ambientOcclusion", (Texture2D)pbrMaterial.AmbientOcclusion, TextureUnit.Texture4));
             }
-            else if (AmbientOcclusion.GetType() == typeof(float))
+            else if (pbrMaterial.AmbientOcclusion.GetType() == typeof(float))
             {
                 directives.Add("#define AMBIENT_OCCLUSION_FLOAT");
-                Properties.Add(new MaterialFloatProperty("material.ambientOcclusion", (float)AmbientOcclusion));
+                pbrMaterial.Properties.Add(new MaterialFloatProperty("material.ambientOcclusion", (float)pbrMaterial.AmbientOcclusion));
             }
             else
             {
@@ -160,12 +154,9 @@ public class PBRMaterial(string name) : Material(name)
             }
         }
 
-        StringBuilder sb = new();
         foreach (string directive in directives)
         {
             sb.Append($"{directive}\n");
         }
-
-        ShaderProgram = new ShaderProgram(engine.ShaderHandler, Name, "pbr_cluster", sb.ToString());
     }
 }

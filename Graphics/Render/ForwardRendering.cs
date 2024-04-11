@@ -88,7 +88,7 @@ public class ForwardRendering : IRenderPass
             if (mesh.Material is null) continue;
             if (!mesh.Material.HasBeenBuilt)
             {
-                mesh.Material.Build(Engine);
+                mesh.BuildMaterial(Engine);
                 mesh.Material.HasBeenBuilt = true;
             }
             mesh.Material.Use(mesh);

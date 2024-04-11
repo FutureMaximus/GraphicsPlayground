@@ -143,7 +143,7 @@ public class Engine
         {
             if (mesh.Material is not null)
             {
-                mesh.Material.Build(this);
+                mesh.BuildMaterial(this);
                 mesh.Material.HasBeenBuilt = true;
             }
             mesh.Load();

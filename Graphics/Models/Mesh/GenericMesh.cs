@@ -8,6 +8,10 @@ using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Materials;
 using System.Diagnostics.CodeAnalysis;
 using GraphicsPlayground.Graphics.Render;
+using GraphicsPlayground.Graphics.Materials.Properties;
+using GraphicsPlayground.Graphics.Textures;
+using System.Text;
+using GraphicsPlayground.Graphics.Shaders;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
 
@@ -175,6 +179,30 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
         GL.DrawElements(PrimitiveType.Triangles, IndicesLength, DrawElementsType.UnsignedInt, 0);
         //GraphicsUtil.CheckError($"{Name} Render Call");
         GL.BindVertexArray(0);
+    }
+
+    /// <summary>Builds the material for the mesh.</summary>
+    public void BuildMaterial(in Engine engine)
+    {
+        if (engine.ShaderHandler == null)
+        {
+            throw new Exception("Engine must have a shader handler to build materials.");
+        }
+        if (Material is null)
+        {
+            throw new Exception("Material is null cannot build.");
+        }
+        List<string> directives = [];
+        StringBuilder sb = new();
+        if (Material is PBRMaterial pbrMaterial)
+        {
+            PBRMaterial.Process(pbrMaterial, directives, sb);
+            Material.ShaderProgram = new ShaderProgram(engine.ShaderHandler, Name, "pbr_cluster", sb.ToString());
+        }
+        else
+        {
+            throw new Exception("Material type not supported for generic mesh.");
+        }
     }
 
     public void Dispose()

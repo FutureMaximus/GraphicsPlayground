@@ -8,6 +8,10 @@ using GraphicsPlayground.Graphics.Shader.Data;
 using GraphicsPlayground.Graphics.Materials;
 using System.Diagnostics.CodeAnalysis;
 using GraphicsPlayground.Graphics.Render;
+using GraphicsPlayground.Graphics.Materials.Properties;
+using GraphicsPlayground.Graphics.Shaders;
+using GraphicsPlayground.Graphics.Textures;
+using System.Text;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
 
@@ -114,6 +118,30 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
     public void Render()
     {
         // TODO: Render
+    }
+
+    public void BuildMaterial(in Engine engine)
+    {
+        if (engine.ShaderHandler == null)
+        {
+            throw new Exception("Engine must have a shader handler to build materials.");
+        }
+        if (Material is null)
+        {
+            throw new Exception("Material is null cannot build.");
+        }
+        List<string> directives = [];
+        StringBuilder sb = new();
+        directives.Add("#define SKELETAL_MESH");
+        if (Material is PBRMaterial pbrMaterial)
+        {
+            PBRMaterial.Process(pbrMaterial, directives, sb);
+            Material.ShaderProgram = new ShaderProgram(engine.ShaderHandler, Name, "pbr_cluster", sb.ToString());
+        }
+        else
+        {
+            throw new Exception("Material type not supported for skeletal mesh.");
+        }
     }
 
     public void Dispose()

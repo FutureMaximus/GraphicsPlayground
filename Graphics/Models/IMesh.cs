@@ -48,6 +48,9 @@ public interface IMesh : IDisposable, IEqualityComparer<IMesh>
     ///<summary>Shader data for this mesh.</summary>
     IShaderData ShaderData { get; set; }
 
-    ///<summary>ParentMaterial to render for this mesh.</summary>
+    ///<summary>Material to render for this mesh.</summary>
     Material? Material { get; set; }
+
+    ///<summary>Builds the material for the mesh.</summary>
+    public void BuildMaterial(in Engine engine);
 }

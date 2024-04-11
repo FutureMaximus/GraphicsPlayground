@@ -60,7 +60,7 @@ public class ClusteredForwardRendering : IRenderPass
             if (mesh.Material is null) continue;
             if (!mesh.Material.HasBeenBuilt)
             {
-                mesh.Material.Build(Engine);
+                mesh.BuildMaterial(Engine);
                 mesh.Material.HasBeenBuilt = true;
             }
             if (mesh.Material.ShaderProgram is null) continue;
