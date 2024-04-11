@@ -39,6 +39,7 @@ void main()
 {
 	#ifdef SKELETAL_MESH
 	vec4 totalPosition = vec4(0.0f);
+	vec3 localNormal = aNormal;
     for(int i = 0 ; i < MAX_BONE_INFLUENCE; i++)
     {
         if(aBoneIds[i] == -1)
@@ -50,15 +51,16 @@ void main()
         }
         vec4 localPosition = vec4(aPosition, 1.0f) * finalBonesMatrices[aBoneIds[i]];
         totalPosition += localPosition * aWeights[i];
-        vec3 localNormal = norm * mat3(finalBonesMatrices[aBoneIds[i]]);
+        vec3 localNormal = aNormal * mat3(finalBonesMatrices[aBoneIds[i]]);
 	}
 	vec3 position = totalPosition.xyz;
+	vec3 normal = localNormal;
 	#else
 	vec3 position = aPosition;
+	vec3 normal = normalize(aNormal * normalMatrix);
 	#endif
 	gl_Position = vec4(position, 1.0) * model * view * projection;
 	vs_out.FragPos = vec3(vec4(position, 1.0) * model);
-	vec3 normal = normalize(aNormal * normalMatrix);
 	vs_out.Normal = normal;
 	vs_out.TexCoords = aTexCoords;
 	if (hasTangents) {

@@ -22,4 +22,6 @@ public abstract class Material(string name)
     public bool HasBeenBuilt = false;
     /// <summary> The shading model of the material. </summary>
     public MaterialShadingModel ShadingModel = MaterialShadingModel.DefaultLit;
+    /// <summary> The name of the shader program to look for when building the material. </summary>
+    public abstract string ShaderProgramName { get; }
 }

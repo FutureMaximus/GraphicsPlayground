@@ -7,7 +7,11 @@ public class MaterialVector3Property(string name, Vector3 value) : MaterialPrope
 {
     public Vector3 Value = value;
 
-    public override void UseMaterialProperty(ref ShaderProgram shaderProgram) => shaderProgram.SetVector3(UniformName, Value);
+    public override void UseMaterialProperty(ref ShaderProgram shaderProgram)
+    {
+        if (!ShouldUpdate) return;
+        shaderProgram.SetVector3(UniformName, Value);
+    }
 
     public override string TypeName => "Vector3";
 }

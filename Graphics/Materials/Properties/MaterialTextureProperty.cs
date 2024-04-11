@@ -13,6 +13,7 @@ public class MaterialTextureProperty(string name, Texture2D texture, TextureUnit
 
     public override void UseMaterialProperty(ref ShaderProgram shaderProgram) 
     {
+        if (!ShouldUpdate) return;
         Texture.Use(TextureUnit);
         shaderProgram.SetInt(UniformName, TextureLocation);
     }

@@ -87,15 +87,15 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
 
         VertexArrayObject = GL.GenVertexArray();
         GL.BindVertexArray(VertexArrayObject);
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.VertexArray, VertexArrayObject, $"{Name} VAO");
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.VertexArray, VertexArrayObject, $"{Name} Generic Mesh VAO");
 
         VertexBufferObject = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, VertexBufferObject, $"{Name} VBO");
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, VertexBufferObject, $"{Name} Generic Mesh VBO");
         GL.BufferData(BufferTarget.ArrayBuffer, data.Count * Unsafe.SizeOf<GenericVertexData>(), data.ToArray(), MeshUsageHint);
-        GraphicsUtil.CheckError($"{Name} VBO Load");
+        GraphicsUtil.CheckError($"{Name} Generic Mesh VBO Load");
 
-        int stride = Marshal.SizeOf(typeof(GenericVertexData));
+        int stride = Unsafe.SizeOf<GenericVertexData>();
 
         // Layout 0: Position
         GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
@@ -109,36 +109,28 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
         GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
         GL.EnableVertexAttribArray(2);
 
-        /*// Layout 3: Bone IDs
-        GL.VertexAttribIPointer(3, 4, VertexAttribIntegerType.Int, stride, 8 * sizeof(float));
-        GL.EnableVertexAttribArray(3);
-
-        // Layout 4: Weights
-        GL.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, stride, 12 * sizeof(float));
-        GL.EnableVertexAttribArray(4);*/
-
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
         if (HasTangents)
         {
             TangentBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, TangentBufferObject);
-            GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, TangentBufferObject, $"{Name} TangentBufferObject");
+            GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, TangentBufferObject, $"{Name} Generic Mesh TangentBufferObject");
             GL.BufferData(
                 BufferTarget.ArrayBuffer,
-                Tangents?.Count * Marshal.SizeOf(typeof(Vector3)) ?? 0,
+                Tangents?.Count * Unsafe.SizeOf<Vector3>() ?? 0,
                 Tangents?.ToArray() ?? [],
                 MeshUsageHint);
-            GraphicsUtil.CheckError($"{Name} TangentBufferObject Load");
+            GraphicsUtil.CheckError($"{Name} Generic Mesh TangentBufferObject Load");
 
             // Layout 3: Tangent
-            GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, Marshal.SizeOf(typeof(Vector3)), 0);
+            GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, Unsafe.SizeOf<Vector3>(), 0);
             GL.EnableVertexAttribArray(3);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         }
 
-        GraphicsUtil.CheckError($"{Name} VAO Load");
+        GraphicsUtil.CheckError($"{Name} Generic Mesh VAO Load");
 
         //=================================
 
@@ -147,8 +139,8 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
         uint[] indices = [.. Indices];
         GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, MeshUsageHint);
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ElementBufferObject, $"{Name} EBO");
-        GraphicsUtil.CheckError($"{Name} EBO Load");
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ElementBufferObject, $"{Name} Generic Mesh EBO");
+        GraphicsUtil.CheckError($"{Name} Generic Mesh EBO Load");
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         // ============================================
 
@@ -157,10 +149,7 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
         IndicesLength = indices.Length;
         TextureCoordsLength = GeometryHelper.ArrayFromVector2List(TextureCoords).Length;
         NormalsLength = GeometryHelper.ArrayFromVector3List(Normals).Length;
-        if (Tangents is not null)
-        {
-            TangentsLength = GeometryHelper.ArrayFromVector3List(Tangents).Length;
-        }
+        TangentsLength = GeometryHelper.ArrayFromVector3List(Tangents ?? []).Length;
         IsLoaded = true;
     }
 
@@ -195,7 +184,7 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
         if (Material is PBRMaterial pbrMaterial)
         {
             PBRMaterial.Process(pbrMaterial, directives, sb);
-            Material.ShaderProgram = new ShaderProgram(engine.ShaderHandler, Name, "pbr_cluster", sb.ToString());
+            Material.ShaderProgram = new ShaderProgram(engine.ShaderHandler, Material.Name, "pbr_cluster", sb.ToString());
         }
         else
         {

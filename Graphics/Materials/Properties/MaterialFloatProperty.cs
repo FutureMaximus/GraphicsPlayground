@@ -7,7 +7,11 @@ public class MaterialFloatProperty(string uniformName, float value) : MaterialPr
 {
     public float Value = value;
 
-    public override void UseMaterialProperty(ref ShaderProgram shaderProgram) => shaderProgram.SetFloat(UniformName, Value);
+    public override void UseMaterialProperty(ref ShaderProgram shaderProgram)
+    {
+        if (!ShouldUpdate) return;
+        shaderProgram.SetFloat(UniformName, Value);
+    }
 
     public override string TypeName => "float";
 }

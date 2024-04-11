@@ -40,6 +40,8 @@ public class PBRMaterial(string name) : Material(name)
     ///</summary>
     public Texture2D? ARM;
 
+    public override string ShaderProgramName => "pbr_cluster";
+
     public override void Use(in IMesh mesh)
     {
         if (ShaderProgram == null)

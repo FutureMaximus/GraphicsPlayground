@@ -14,6 +14,6 @@ public abstract class MaterialProperty(string uniformName)
     /// <summary> The name of the uniform used in the shader. </summary>
     public string UniformName = uniformName;
 
-    /// <summary> Whether this material is dynamic and should be updated every frame. </summary>
-    public bool Dynamic = true;
+    /// <summary> Whether this material should be updated every frame. </summary>
+    public bool ShouldUpdate = true;
 }

@@ -10,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Materials.Properties;
 using GraphicsPlayground.Graphics.Shaders;
-using GraphicsPlayground.Graphics.Textures;
 using System.Text;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
@@ -97,17 +96,79 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
             }
         }
 
+        // ========= Vertex Binding ========
         List<SkeletalVertexData> data = GeometryHelper.GetSkeletalVertexDatas(Vertices, Normals, TextureCoords, BoneIDs, Weights);
 
         VertexArrayObject = GL.GenVertexArray();
         GL.BindVertexArray(VertexArrayObject);
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.VertexArray, VertexArrayObject, $"{Name} VAO");
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.VertexArray, VertexArrayObject, $"{Name} Skeletal Mesh VAO");
 
         VertexBufferObject = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
-        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, VertexBufferObject, $"{Name} VBO");
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, VertexBufferObject, $"{Name} Skeletal Mesh VBO");
         GL.BufferData(BufferTarget.ArrayBuffer, data.Count * Unsafe.SizeOf<SkeletalVertexData>(), data.ToArray(), MeshUsageHint);
         GraphicsUtil.CheckError($"{Name} VBO Load");
+
+        int stride = Unsafe.SizeOf<SkeletalVertexData>();
+
+        // Layout 0: Position
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
+        GL.EnableVertexAttribArray(0);
+
+        // Layout 1: Normal
+        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
+        GL.EnableVertexAttribArray(1);
+
+        // Layout 2: Texture Coordinates
+        GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
+        GL.EnableVertexAttribArray(2);
+
+        // Layout 3: Bone IDs
+        GL.VertexAttribIPointer(3, 4, VertexAttribIntegerType.Int, stride, 8 * sizeof(float));
+        GL.EnableVertexAttribArray(3);
+
+        // Layout 4: Weights
+        GL.VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, stride, 12 * sizeof(float));
+        GL.EnableVertexAttribArray(4);
+
+        // TODO: Remove extra buffer
+        TangentBufferObject = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ArrayBuffer, TangentBufferObject);
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, TangentBufferObject, $"{Name} Skeletal Mesh TangentBufferObject");
+        GL.BufferData(
+            BufferTarget.ArrayBuffer,
+            Tangents?.Count * Unsafe.SizeOf<Vector3>() ?? 0,
+            Tangents?.ToArray() ?? [],
+            MeshUsageHint);
+        GraphicsUtil.CheckError($"{Name} Skeletal Mesh TangentBufferObject Load");
+
+        // Layout 5: Tangent
+        GL.VertexAttribPointer(5, 3, VertexAttribPointerType.Float, false, Unsafe.SizeOf<Vector3>(), 0);
+        GL.EnableVertexAttribArray(3);
+
+        GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+
+        GraphicsUtil.CheckError($"{Name} Skeletal Mesh VAO Load");
+
+        //=================================
+
+        // ========== Element Buffer Binding ==========
+        ElementBufferObject = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
+        uint[] indices = [.. Indices];
+        GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, MeshUsageHint);
+        GraphicsUtil.LabelObject(ObjectLabelIdentifier.Buffer, ElementBufferObject, $"{Name} Skeletal Mesh EBO");
+        GraphicsUtil.CheckError($"{Name} Skeletal Mesh EBO Load");
+        GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+        // ============================================
+
+        GL.BindVertexArray(0);
+        VerticesLength = GeometryHelper.ArrayFromVector3List(Vertices).Length;
+        IndicesLength = indices.Length;
+        TextureCoordsLength = GeometryHelper.ArrayFromVector2List(TextureCoords).Length;
+        NormalsLength = GeometryHelper.ArrayFromVector3List(Normals).Length;
+        TangentsLength = GeometryHelper.ArrayFromVector3List(Tangents ?? []).Length;
+        IsLoaded = true;
     }
 
     public void Update(in Engine engine)
@@ -140,7 +201,13 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
         if (Material is PBRMaterial pbrMaterial)
         {
             PBRMaterial.Process(pbrMaterial, directives, sb);
-            Material.ShaderProgram = new ShaderProgram(engine.ShaderHandler, Name, "pbr_cluster", sb.ToString());
+            List<Matrix4> transforms = [];
+            foreach (BoneInfo boneInfo in BoneInfoMap.Values)
+            {
+                transforms.Add(boneInfo.Offset);
+            }
+            Material.Properties.Add(new MaterialMatrixArrayProperty("finalBonesMatrices", transforms));
+            Material.ShaderProgram = new ShaderProgram(engine.ShaderHandler, Material.Name, "pbr_cluster", sb.ToString());
         }
         else
         {

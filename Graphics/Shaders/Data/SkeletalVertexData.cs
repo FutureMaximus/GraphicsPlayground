@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace GraphicsPlayground.Graphics.Shader.Data;
 
-[StructLayout(LayoutKind.Sequential, Pack = 16)]
+[StructLayout(LayoutKind.Sequential)]
 public struct SkeletalVertexData(
     Vector3 position,
     Vector3 normal,
