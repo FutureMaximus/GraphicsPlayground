@@ -1,5 +1,4 @@
 ﻿using OpenTK.Mathematics;
-using Assimp;
 
 namespace GraphicsPlayground.Graphics.Animations;
 
@@ -10,13 +9,13 @@ public class Bone
     public int Index;
     public Matrix4 LocalTransform = Matrix4.Identity;
     public readonly List<KeyframeData<Vector3>> PositionData = [];
-    public readonly List<KeyframeData<OpenTK.Mathematics.Quaternion>> RotationData = [];
+    public readonly List<KeyframeData<Quaternion>> RotationData = [];
     public readonly List<KeyframeData<Vector3>> ScaleData = [];
     public int NumberOfPositionKeys;
     public int NumberOfRotationKeys;
     public int NumberOfScaleKeys;
 
-    public Bone(string name, int id, in NodeAnimationChannel channel)
+    public Bone(string name, int id, in Assimp.NodeAnimationChannel channel)
     {
         Name = name;
         Index = id;
@@ -141,7 +140,7 @@ public class Bone
     }
 
     /// <summary>Gets the keyframes from the animation channel.</summary>
-    private unsafe void GetKeys(in NodeAnimationChannel channel)
+    private unsafe void GetKeys(in Assimp.NodeAnimationChannel channel)
     {
         NumberOfPositionKeys = channel.PositionKeyCount;
         NumberOfRotationKeys = channel.RotationKeyCount;
@@ -149,19 +148,19 @@ public class Bone
 
         for (int i = 0; i < NumberOfPositionKeys; i++)
         {
-            VectorKey key = channel.PositionKeys[i];
+            Assimp.VectorKey key = channel.PositionKeys[i];
             PositionData.Add(new KeyframeData<Vector3>(key.Time, new Vector3(key.Value.X, key.Value.Y, key.Value.Z)));
         }
         for (int i = 0; i < NumberOfRotationKeys; i++)
         {
-            QuaternionKey key = channel.RotationKeys[i];
+            Assimp.QuaternionKey key = channel.RotationKeys[i];
             RotationData.Add(new KeyframeData<OpenTK.Mathematics.Quaternion>(
                 key.Time, 
-                new OpenTK.Mathematics.Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W)));
+                new Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W)));
         }
         for (int i = 0; i < NumberOfRotationKeys; i++)
         {
-            VectorKey key = channel.ScalingKeys[i];
+            Assimp.VectorKey key = channel.ScalingKeys[i];
             ScaleData.Add(new KeyframeData<Vector3>(key.Time, new Vector3(key.Value.X, key.Value.Y, key.Value.Z)));
         }
     }

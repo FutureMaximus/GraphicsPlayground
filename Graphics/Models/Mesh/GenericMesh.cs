@@ -8,8 +8,6 @@ using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Materials;
 using System.Diagnostics.CodeAnalysis;
 using GraphicsPlayground.Graphics.Render;
-using GraphicsPlayground.Graphics.Materials.Properties;
-using GraphicsPlayground.Graphics.Textures;
 using System.Text;
 using GraphicsPlayground.Graphics.Shaders;
 

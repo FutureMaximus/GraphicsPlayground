@@ -279,57 +279,7 @@ public static class ModelLoader
             DebugLogger.Log($"Mesh {mesh.Name} in model {modelEntry.Name} does not have a material.");
             return null;
         }
-        Assimp.Material material = scene.Materials[mesh.MaterialIndex];
 
-        // Albedo maps
-        List<Texture2D> albedoMaps = LoadMaterialTextures(material, TextureType.Diffuse, modelEntry, assetStreamer, mesh);
-
-        // Normal maps
-        List<Texture2D> normalMaps = LoadMaterialTextures(material, TextureType.Normals, modelEntry, assetStreamer, mesh);
-
-        // ARM maps (Ambient Occlusion, Roughness, Metallic) // TODO: Do metallic, roughness, and ambient occlusion textures check first before ARM.
-        List<Texture2D> armMaps = LoadMaterialTextures(material, TextureType.Unknown, modelEntry, assetStreamer, mesh);
-
-        // Height maps (Optional) // TODO: Displacement mapping to support height maps.
-        //List<Texture2D> heightMaps = LoadMaterialTextures(material, TextureType.Height, modelEntry, assetStreamer, mesh);
-
-        Texture2D albedoTexture;
-        try
-        {
-            albedoTexture = albedoMaps[0];
-        } catch (ArgumentOutOfRangeException)
-        {
-            throw new AssimpException($"Mesh {mesh.Name} in model {modelEntry.Name} does not have an albedo texture.");
-        }
-
-        Texture2D normalTexture;
-        try
-        {
-            normalTexture = normalMaps[0];
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            throw new AssimpException($"Mesh {mesh.Name} in model {modelEntry.Name} does not have a normal texture.");
-        }
-
-        Texture2D armTexture;
-        try
-        {
-            armTexture = armMaps[0];
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            throw new AssimpException($"Mesh {mesh.Name} in model {modelEntry.Name} does not have an ARM texture.");
-        }
-
-        //Texture2D? heightMap = heightMaps.Count > 0 ? heightMaps[0] : null;
-
-        PBRMaterial pbrMaterial = new(mesh.Name)
-        {
-            Albedo = albedoTexture,
-            Normal = normalTexture,
-            ARM = armTexture
-        };
         if (meshType == typeof(SkeletalMesh))
         {
             List<int> boneIDs = [];

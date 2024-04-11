@@ -112,12 +112,16 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
 
     public void Update(in Engine engine)
     {
-        // TODO: Update animation data with delta time.
+        Animator?.UpdateAnimation(engine.DeltaTime);
     }
 
     public void Render()
     {
-        // TODO: Render
+        GL.BindVertexArray(VertexArrayObject);
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
+        GL.DrawElements(PrimitiveType.Triangles, IndicesLength, DrawElementsType.UnsignedInt, 0);
+        //GraphicsUtil.CheckError($"{Name} Render Call");
+        GL.BindVertexArray(0);
     }
 
     public void BuildMaterial(in Engine engine)
