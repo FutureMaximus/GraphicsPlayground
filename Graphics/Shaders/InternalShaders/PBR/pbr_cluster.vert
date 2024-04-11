@@ -31,7 +31,6 @@ uniform mat4 finalBonesMatrices[MAX_BONES];
 
 void main()
 {
-	vec3 position;
 	#ifdef SKELETAL_MESH
 	vec4 totalPosition = vec4(0.0f);
     for(int i = 0 ; i < MAX_BONE_INFLUENCE; i++)
@@ -47,9 +46,9 @@ void main()
         totalPosition += localPosition * weights[i];
         vec3 localNormal = norm * mat3(finalBonesMatrices[boneIds[i]]);
 	}
-	position = totalPosition.xyz;
+	vec3 position = totalPosition.xyz;
 	#else
-	position = aPosition;
+	vec3 position = aPosition;
 	#endif
 	gl_Position = vec4(position, 1.0) * model * view * projection;
 	vs_out.FragPos = vec3(vec4(position, 1.0) * model);
