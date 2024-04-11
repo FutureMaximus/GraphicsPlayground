@@ -120,8 +120,7 @@ public class Bone
         int rotationIndex = GetRotationIndex(animationTime);
         int nextRotationIndex = (rotationIndex + 1) % RotationData.Count;
         float scaleFactor = (float)GetScaleFactor(RotationData[rotationIndex].Time, RotationData[nextRotationIndex].Time, animationTime);
-        OpenTK.Mathematics.Quaternion finalRotation = 
-            OpenTK.Mathematics.Quaternion.Slerp(RotationData[rotationIndex].Value, RotationData[nextRotationIndex].Value, scaleFactor);
+        Quaternion finalRotation = Quaternion.Slerp(RotationData[rotationIndex].Value, RotationData[nextRotationIndex].Value, scaleFactor);
         return Matrix4.CreateFromQuaternion(finalRotation); // TODO: Transpose?
     }
 
@@ -142,10 +141,6 @@ public class Bone
     /// <summary>Gets the keyframes from the animation channel.</summary>
     private unsafe void GetKeys(in Assimp.NodeAnimationChannel channel)
     {
-        NumberOfPositionKeys = channel.PositionKeyCount;
-        NumberOfRotationKeys = channel.RotationKeyCount;
-        NumberOfScaleKeys = channel.ScalingKeyCount;
-
         foreach (Assimp.VectorKey key in channel.PositionKeys)
         {
             PositionData.Add(new KeyframeData<Vector3>(key.Time, new Vector3(key.Value.X, key.Value.Y, key.Value.Z)));

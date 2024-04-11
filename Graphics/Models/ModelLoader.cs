@@ -150,7 +150,7 @@ public static class ModelLoader
         }
     }
 
-    private static void ExtractBonesForSkeletalMesh(Assimp.Mesh assimpMesh, ref SkeletalMesh skeletalMesh)
+    private static void ExtractBonesForSkeletalMesh(ref Assimp.Mesh assimpMesh, ref SkeletalMesh skeletalMesh)
     {
         for (int boneIndex = 0; boneIndex < assimpMesh.BoneCount; boneIndex++)
         {
@@ -275,7 +275,7 @@ public static class ModelLoader
                 BoneIDs = boneIDs,
                 Weights = weights
             };
-            ExtractBonesForSkeletalMesh(mesh, ref skeletalMesh);
+            ExtractBonesForSkeletalMesh(ref mesh, ref skeletalMesh);
             for (int i = 0; i < scene.Animations.Count; i++)
             {
                 AnimationHandler.AddAnimation(scene.Animations[i], scene, skeletalMesh.BoneInfoMap, skeletalMesh.BoneCounter);
