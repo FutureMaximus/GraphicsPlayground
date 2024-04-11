@@ -53,7 +53,6 @@ public class Window : GameWindow
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
-
         float time = (float)args.Time;
         Engine.FPS = (int)(1 / time);
         ImGuiRenderer?.Update(this, time);

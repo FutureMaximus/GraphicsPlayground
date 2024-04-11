@@ -86,17 +86,13 @@ public class AssetStreamer(Engine engine)
         });
     }
 
-    public class StreamingAsset(string name, string path, Action<byte[], object?> afterLoaded, object? assetData) : IAssetHolder
+    public class StreamingAsset(string name, string path, Action<byte[], object?> afterLoaded, object? assetData = null) : IAssetHolder
     {
         public string Name = name;
         public string Path = path;
-        /// <summary>
-        /// Specify an optional action to execute after the data is loaded while the asset is on a separate thread.
-        /// </summary>
+        /// <summary>Specify an optional action to execute after the data is loaded while the asset is on a separate thread.</summary>
         public Action<byte[], StreamingAsset>? ActionAfterDataLoaded;
-        /// <summary>
-        /// Specify the action that occurs after the asset is loaded this will run on the main thread.
-        /// </summary>
+        /// <summary>Specify the action that occurs after the asset is loaded this will run on the main thread.</summary>
         public Action<byte[], object?> AfterLoadedExecute = afterLoaded;
         public bool Loaded;
         public byte[]? Data;

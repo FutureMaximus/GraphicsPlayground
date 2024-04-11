@@ -1,4 +1,5 @@
 ﻿using GraphicsPlayground.Graphics.Materials;
+using GraphicsPlayground.Graphics.Render;
 using GraphicsPlayground.Graphics.Shaders.Data;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -31,6 +32,9 @@ public interface IMesh : IDisposable, IEqualityComparer<IMesh>
 
     ///<summary>Loads the mesh data into OpenGL.</summary>
     void Load();
+
+    ///<summary>Passes a reference of the engine to the mesh so it can update itself.</summary>
+    void Update(in Engine engine);
 
     ///<summary>Returns if the mesh is loaded.</summary>
     bool IsLoaded { get; set; }

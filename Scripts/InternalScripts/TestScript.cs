@@ -1,14 +1,11 @@
 ﻿using GraphicsPlayground.Graphics.Materials;
 using GraphicsPlayground.Graphics.Models;
-using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Graphics.Models.ShapeModels;
 using GraphicsPlayground.Graphics.Render;
-using GraphicsPlayground.Graphics.Shaders.Data;
 using GraphicsPlayground.Graphics.Terrain.World;
 using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
-using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Drawing;
 

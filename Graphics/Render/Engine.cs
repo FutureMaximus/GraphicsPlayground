@@ -305,6 +305,11 @@ public class Engine
         DeltaTime = deltaTime;
         TimeElapsed += deltaTime;
 
+        foreach (IMesh mesh in Meshes)
+        {
+            mesh.Update(this);
+        }
+
         foreach (IScript script in Scripts)
         {
             if (script.ShouldUpdate)

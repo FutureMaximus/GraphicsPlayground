@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using GraphicsPlayground.Graphics.Shader.Data;
 using GraphicsPlayground.Graphics.Materials;
 using System.Diagnostics.CodeAnalysis;
+using GraphicsPlayground.Graphics.Render;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
 
@@ -105,9 +106,14 @@ public class SkeletalMesh(string name, ModelPart modelPart) : IMesh, IDisposable
         GraphicsUtil.CheckError($"{Name} VBO Load");
     }
 
+    public void Update(in Engine engine)
+    {
+        // TODO: Update animation data with delta time.
+    }
+
     public void Render()
     {
-
+        // TODO: Render
     }
 
     public void Dispose()

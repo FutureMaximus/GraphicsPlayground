@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using GraphicsPlayground.Graphics.Models.Generic;
 using GraphicsPlayground.Graphics.Materials;
 using System.Diagnostics.CodeAnalysis;
+using GraphicsPlayground.Graphics.Render;
 
 namespace GraphicsPlayground.Graphics.Models.Mesh;
 
@@ -159,6 +160,12 @@ public class GenericMesh(string name, ModelPart modelPart) : IMesh
             TangentsLength = GeometryHelper.ArrayFromVector3List(Tangents).Length;
         }
         IsLoaded = true;
+    }
+
+    /// <summary>Updates the mesh.</summary>
+    public void Update(in Engine engine)
+    {
+        // Nothing to update for generic mesh.
     }
 
     public void Render()
