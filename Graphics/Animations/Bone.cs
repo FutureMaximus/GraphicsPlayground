@@ -146,21 +146,16 @@ public class Bone
         NumberOfRotationKeys = channel.RotationKeyCount;
         NumberOfScaleKeys = channel.ScalingKeyCount;
 
-        for (int i = 0; i < NumberOfPositionKeys; i++)
+        foreach (Assimp.VectorKey key in channel.PositionKeys)
         {
-            Assimp.VectorKey key = channel.PositionKeys[i];
             PositionData.Add(new KeyframeData<Vector3>(key.Time, new Vector3(key.Value.X, key.Value.Y, key.Value.Z)));
         }
-        for (int i = 0; i < NumberOfRotationKeys; i++)
+        foreach (Assimp.QuaternionKey key in channel.RotationKeys)
         {
-            Assimp.QuaternionKey key = channel.RotationKeys[i];
-            RotationData.Add(new KeyframeData<OpenTK.Mathematics.Quaternion>(
-                key.Time, 
-                new Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W)));
+            RotationData.Add(new KeyframeData<Quaternion>(key.Time, new Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W)));
         }
-        for (int i = 0; i < NumberOfRotationKeys; i++)
+        foreach (Assimp.VectorKey key in channel.ScalingKeys)
         {
-            Assimp.VectorKey key = channel.ScalingKeys[i];
             ScaleData.Add(new KeyframeData<Vector3>(key.Time, new Vector3(key.Value.X, key.Value.Y, key.Value.Z)));
         }
     }

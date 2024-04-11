@@ -4,7 +4,6 @@ using GraphicsPlayground.Graphics.Textures;
 using GraphicsPlayground.Util;
 using GraphicsPlayground.Graphics.Models.Mesh;
 using GraphicsPlayground.Graphics.Animations;
-using GraphicsPlayground.Graphics.Materials;
 using GraphicsPlayground.Graphics.Shaders.Data;
 
 namespace GraphicsPlayground.Graphics.Models;
@@ -79,12 +78,11 @@ public static class ModelLoader
     /// <param name="postProcessSteps"></param>
     /// <param name="assetStreamer"></param>
     /// <exception cref="AssimpException"></exception>
-    public static void ProcessModel(ModelEntry modelEntry, AssetStreamer assetStreamer, PostProcessSteps postProcessSteps = 
+    public static Model ProcessModel(ModelEntry modelEntry, AssetStreamer assetStreamer, PostProcessSteps postProcessSteps = 
         PostProcessSteps.Triangulate | 
         PostProcessSteps.SortByPrimitiveType |
         PostProcessSteps.FlipUVs |
-        PostProcessSteps.CalculateTangentSpace
-    )
+        PostProcessSteps.CalculateTangentSpace)
     {
         AssimpContext importer = new();
         Scene scene;
@@ -105,34 +103,7 @@ public static class ModelLoader
         modelEntry.CoreModel = model;
         _processedModels.Add(model);
         ProcessNode(scene.RootNode, scene, modelEntry, assetStreamer);
-    }
-
-    /// <summary>
-    /// After getting a model from the entry, it is removed from the processed models list.
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns>
-    /// The model if it exists, otherwise null.
-    /// </returns>
-    public static Model? GetModel(string name)
-    {
-        for (int i = 0; i < _processedModels.Count; i++)
-        {
-            if (_processedModels[i].Name == name)
-            {
-                Model model = _processedModels[i];
-                _processedModels.RemoveAt(i);
-                foreach (LoadedTexture loadedTex in _processedTextures.ToList())
-                {
-                    if (loadedTex.ModelInternalName == model.Name)
-                    {
-                        _processedTextures.Remove(loadedTex);
-                    }
-                }
-                return model;
-            }
-        }
-        return null;
+        return modelEntry.CoreModel;
     }
 
     private static void ProcessNode(Node Node, Scene scene, ModelEntry modelEntry, AssetStreamer assetStreamer, ModelPart? parent = null)
@@ -152,7 +123,6 @@ public static class ModelLoader
                   transform.D1, transform.D2, transform.D3, transform.D4);
         modelTransform.Transpose();
         modelPart.LocalTransformation = new(modelTransform);
-
         modelEntry.CoreModel.Parts.Add(modelPart);
 
         for (int i = 0; i < Node.MeshCount; i++)
@@ -222,16 +192,16 @@ public static class ModelLoader
                     throw new AssimpException($"Vertex ID {vertexID} is greater than the vertex count of " +
                         $"{skeletalMesh.Vertices.Count} in skeletal mesh {skeletalMesh.Name}");
                 }
-                if (i >= GraphicsUtil.MaxBoneInfluence)
-                {
-                    throw new AssimpException($"Bone influence count is greater than the " +
-                        $"maximum bone influence count of {GraphicsUtil.MaxBoneInfluence} in skeletal mesh {skeletalMesh.Name}");
-                }
 
                 for (int j = 0; j < GraphicsUtil.MaxBoneInfluence; j++)
                 {
-                    skeletalMesh.BoneIDs[vertexID * GraphicsUtil.MaxBoneInfluence + j] = boneID;
-                    skeletalMesh.Weights[vertexID * GraphicsUtil.MaxBoneInfluence + j] = weight;
+                    int vertexBoneIndex = vertexID * GraphicsUtil.MaxBoneInfluence + j;
+                    if (skeletalMesh.BoneIDs[vertexBoneIndex] == -1)
+                    {
+                        skeletalMesh.BoneIDs[vertexBoneIndex] = boneID;
+                        skeletalMesh.Weights[vertexBoneIndex] = weight;
+                        break;
+                    }
                 }
             }
         }

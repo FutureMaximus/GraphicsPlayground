@@ -3,11 +3,11 @@ using OpenTK.Mathematics;
 
 namespace GraphicsPlayground.Graphics.Animations;
 
-public struct AnimationNodeInfo(Matrix4 transform, string name, int childrenCount)
+public struct AnimationNodeInfo()
 {
-    public Matrix4 Transformation = transform;
-    public string Name = name;
-    public int ChildrenCount = childrenCount;
+    public Matrix4 Transformation = Matrix4.Identity;
+    public string? Name = null;
+    public int ChildrenCount = 0;
     public List<AnimationNodeInfo> Children = [];
 }
 
@@ -40,13 +40,13 @@ public sealed class Animation
         {
             NodeAnimationChannel channel = animationToRead.NodeAnimationChannels[i];
             string boneName = channel.NodeName;
-            if (!meshBoneInfo.ContainsKey(boneName))
+            if (!meshBoneInfo.TryGetValue(boneName, out BoneInfo value))
             {
-                BoneInfo boneInfo = meshBoneInfo[boneName];
-                boneInfo.ID = boneInfoCount;
+                value = new BoneInfo() { ID = boneInfoCount };
+                meshBoneInfo[boneName] = value;
                 boneInfoCount++;
             }
-            Bones.Add(new Bone(boneName, meshBoneInfo[boneName].ID, channel));
+            Bones.Add(new Bone(boneName, value.ID, channel));
         }
     }
 
@@ -61,6 +61,10 @@ public sealed class Animation
         {
             AnimationNodeInfo childNode = new();
             ReadHierarchyData(ref childNode, child);
+            if (childNode.Name == null)
+            {
+                continue;
+            }
             destination.Children.Add(childNode);
         }
     }
